@@ -14,43 +14,62 @@ function isPublic(pathname: string): boolean {
 }
 
 export async function updateSession(request: NextRequest) {
+  try {
+    return await updateSessionInner(request);
+  } catch (err) {
+    console.error("[supabase middleware]", err);
+    const login = request.nextUrl.clone();
+    login.pathname = "/login";
+    login.searchParams.set("error", "server");
+    return NextResponse.redirect(login);
+  }
+}
+
+async function updateSessionInner(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabaseUrl = normalizeSupabaseProjectUrl(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!
+    process.env.NEXT_PUBLIC_SUPABASE_URL
   );
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!anonKey?.trim()) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY no esta definida. Revisa Variables de entorno (Vercel) o saas/.env.local."
+    );
+  }
 
-  const supabase = createServerClient(
-    supabaseUrl,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(
-          cookiesToSet: Array<{
-            name: string;
-            value: string;
-            options?: Record<string, unknown>;
-          }>
-        ) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
+  const supabase = createServerClient(supabaseUrl, anonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
       },
-    }
-  );
+      setAll(
+        cookiesToSet: Array<{
+          name: string;
+          value: string;
+          options?: Record<string, unknown>;
+        }>
+      ) {
+        /* Solo Set-Cookie en la respuesta. request.cookies.set en Edge suele dar 500 en algunos runtimes. */
+        supabaseResponse = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) => {
+          const o = { ...(options ?? {}) } as Record<string, unknown>;
+          delete o.name;
+          supabaseResponse.cookies.set(name, value, o as never);
+        });
+      },
+    },
+  });
 
-  // Importante: getUser() refresca cookies si la sesión está caducada.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user:
+    | Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"]
+    | null = null;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (!error) user = data.user;
+  } catch {
+    user = null;
+  }
 
   const { pathname } = request.nextUrl;
 

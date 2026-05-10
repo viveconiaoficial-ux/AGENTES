@@ -1,16 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import styles from "../auth-shell.module.css";
 
 export default function LoginPage() {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [paramHint, setParamHint] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const err = q.get("error");
+    if (err === "server") {
+      setParamHint(
+        "Hubo un fallo montando la sesión (middleware). Suele ser variables NEXT_PUBLIC_* en Vercel o cookies; prueba tras redeploy."
+      );
+    } else if (err === "auth") {
+      setParamHint(
+        "No se pudo completar el login (callback). Revisa la URL del sitio en Supabase Authentication."
+      );
+    }
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -65,6 +79,10 @@ export default function LoginPage() {
               required
             />
           </label>
+
+          {paramHint ? (
+            <div className={styles.errorBox}>{paramHint}</div>
+          ) : null}
 
           {error ? <div className={styles.errorBox}>{error}</div> : null}
 
