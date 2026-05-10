@@ -119,17 +119,22 @@ n8n busca el negocio por `negocio_id`, llama al modelo, guarda mensaje + respues
 ## Despliegue en Vercel
 
 1. **GitHub**: importa este repo (monorepo con carpeta `saas/`).
-2. **Obligatorio** — **Project → Settings → General → Root Directory** → **`saas`**.  
-   Así Vercel ejecuta `next build` dentro de la carpeta correcta y genera las funciones sin romper el runtime. **No copies** `saas/.next` a la raíz del repo (eso provoca 500 genéricos como `/_error` en producción).
-3. **Build & Development Settings** (mismo sitio en Vercel): deja **Install** y **Build** por defecto (`npm install` y `next build` dentro de `saas`), o vacía overrides antiguos si los tenías del monorepo sin root directory.
-4. **Environment Variables** (Production):
+
+2. **Recomendado** — **Project → Settings → General → Root Directory** → **`saas`**.  
+   Así `npm install` y `next build` corren solo en la app; no instales la raíz del monorepo sola. **No copies** `saas/.next` a la raíz del repo (eso provoca 500 genéricos en producción).
+
+3. **Si Vercel sigue en la raíz del repo** (sin Root Directory `saas`): el repo incluye **`vercel.json`** con `installCommand: npm ci --prefix saas && npm ci` y `buildCommand: npm run build --prefix saas` para instalar **Tailwind, Supabase y el resto de `saas/`**; sin eso el build falla (`tailwindcss` no encontrado, alias `@/` roto).
+
+4. **Build & Development Settings**: si usas Root Directory `saas`, deja install/build por defecto y los overrides del panel solo para lo que falte. Si usas raíz + `vercel.json`, no pongas en el panel un install que **reemplace** y omita el `vercel.json`.
+
+5. **Environment Variables** (Production):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY` (solo servidor, para `/api/widget/citas`)
    - `NEXT_PUBLIC_CHAT_ENDPOINT`
    - Opcional: `NEXT_PUBLIC_APP_URL` con tu dominio o `*.vercel.app`
-5. **Deploy** (Redeploy tras cambiar Root Directory).
-6. En **Supabase → Authentication → URL Configuration** añade la URL de tu app en Vercel.
+6. **Deploy** (Redeploy tras cambiar Root Directory o `vercel.json`).
+7. En **Supabase → Authentication → URL Configuration** añade la URL de tu app en Vercel.
 
 ## Lo que viene en Fase 2
 
