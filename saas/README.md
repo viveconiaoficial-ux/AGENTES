@@ -120,7 +120,7 @@ n8n busca el negocio por `negocio_id`, llama al modelo, guarda mensaje + respues
 
 1. **GitHub**: sube este repo (la carpeta raíz `saas/` o el monorepo entero).
 2. **Vercel** → **New Project** → importa el repo.
-3. Si subiste el monorepo, selecciona **Root Directory = `saas`**.
+3. Si el repo es el monorepo (carpetas `saas/`, etc.), en **Project → Settings → General → Root Directory** pon **`saas`**. Sin esto suele fallar el deploy (`next: command not found` o errores de tipo *Missing public directory*).
 4. **Environment Variables**:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
