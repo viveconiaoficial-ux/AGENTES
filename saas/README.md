@@ -123,7 +123,7 @@ n8n busca el negocio por `negocio_id`, llama al modelo, guarda mensaje + respues
 2. **Recomendado** — **Project → Settings → General → Root Directory** → **`saas`**.  
    Así `npm install` y `next build` corren solo en la app; no instales la raíz del monorepo sola. **No copies** `saas/.next` a la raíz del repo (eso provoca 500 genéricos en producción).
 
-3. **Si Vercel sigue en la raíz del repo** (sin Root Directory `saas`): el repo incluye **`vercel.json`** con `installCommand: npm ci --prefix saas && npm ci` y `buildCommand: npm run build --prefix saas` para instalar **Tailwind, Supabase y el resto de `saas/`**; sin eso el build falla (`tailwindcss` no encontrado, alias `@/` roto).
+3. **Si el despliegue sigue anclado en la raíz del monorepo** (Vercel sin Root Directory `saas`): el **`vercel.json`** de la raíz instala `saas` y, **después del build**, copia `saas/.next` y `saas/public` a la raíz porque Vercel espera ahí el `routes-manifest.json`. Si más adelante ves 500 raros en producción, cambia a Root Directory `saas` y quita esa copia del `buildCommand`.
 
 4. **Build & Development Settings**: si usas Root Directory `saas`, deja install/build por defecto y los overrides del panel solo para lo que falte. Si usas raíz + `vercel.json`, no pongas en el panel un install que **reemplace** y omita el `vercel.json`.
 

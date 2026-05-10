@@ -2,5 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "npm ci --prefix saas && npm ci",
-  "buildCommand": "npm run build --prefix saas"
+  "buildCommand": "npm run build --prefix saas && rm -rf .next public && cp -R saas/.next .next && cp -R saas/public public"
 }
