@@ -18,7 +18,9 @@ export default async function ClienteConfiguracionPage({
   if (!negocio) notFound();
 
   const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL || "https://TU-DOMINIO.vercel.app";
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+    "https://TU-DOMINIO.vercel.app";
   const demoUrl = `${appUrl}/demo/${negocio.id}`;
   const widgetSnippet = `<script defer src="${appUrl}/embed.js" data-negocio="${negocio.id}"></script>`;
 
