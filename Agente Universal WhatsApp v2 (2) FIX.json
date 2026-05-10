@@ -1,0 +1,728 @@
+{
+  "name": "Agente Universal WhatsApp v2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-agente",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "7f4b79e7-c016-4217-8ea3-f4a6ba8b2eb0",
+      "name": "Webhook Evolution",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        64
+      ],
+      "webhookId": "2f752526-5ee9-468a-b48d-000c111b057c"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\nconst data = body?.data || {};\nconst key = data?.key || {};\nconst fromMe = key?.fromMe || false;\n\n// Soporta texto, captions de imagen/video, etc.\nconst message =\n  data?.message?.conversation ||\n  data?.message?.extendedTextMessage?.text ||\n  data?.message?.imageMessage?.caption ||\n  data?.message?.videoMessage?.caption ||\n  data?.message?.buttonsResponseMessage?.selectedDisplayText ||\n  data?.message?.listResponseMessage?.title ||\n  '';\n\n// Posibles candidatos al JID/teléfono real del remitente (soporta @lid en Evolution v2.2+)\nconst candidates = [\n  key?.senderPn,\n  key?.remoteJidAlt,\n  key?.remoteJid,\n  data?.participant\n].filter(Boolean).map(String);\n\nconst preferido = candidates.find(c => c.includes('@s.whatsapp.net'));\nconst remoteJid = preferido || candidates[0] || '';\nconst from = remoteJid.split('@')[0].replace(/\\D/g, '');\n\nconst instance = body?.instance || '';\nconst pushName = data?.pushName || 'Cliente';\nconst event = String(body?.event || '').toLowerCase().replace(/_/g, '.');\n\n// Acepta messages.upsert en cualquier capitalización; ignora si no hay texto o es propio\nif (fromMe || !message || !remoteJid || !event.includes('messages.upsert')) {\n  return [];\n}\n\nreturn [{ json: { message, from, remoteJid, instance, pushName } }];"
+      },
+      "id": "8754dd40-ade8-4ecd-a022-219bf268b442",
+      "name": "Extraer datos del mensaje",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://rcarakhgtyqylwcizehh.supabase.co/rest/v1/negocios?evolution_instance=eq.{{ $input.item.json.instance }}&select=*&limit=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjYXJha2hndHlxeWx3Y2l6ZWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzMzOTIsImV4cCI6MjA5MzY0OTM5Mn0.Kzh2JxKFDVab74lneUZ0bZtc7hjGcfzGhrbOCXDZWpo"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjYXJha2hndHlxeWx3Y2l6ZWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzMzOTIsImV4cCI6MjA5MzY0OTM5Mn0.Kzh2JxKFDVab74lneUZ0bZtc7hjGcfzGhrbOCXDZWpo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "471bfdc9-f7ae-4288-8765-dfb62c349308",
+      "name": "Buscar negocio por instance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        288,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7ed6acc6-7b59-4d4d-88ee-ba81667b9649",
+      "name": "Negocio encontrado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        528,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "negocio_id",
+              "value": "={{ $input.item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "negocio_nombre",
+              "value": "={{ $input.item.json.nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "negocio_descripcion",
+              "value": "={{ $input.item.json.descripcion }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "negocio_horario",
+              "value": "={{ $input.item.json.horario }}",
+              "type": "string"
+            },
+            {
+              "id": "a5",
+              "name": "negocio_direccion",
+              "value": "={{ $input.item.json.direccion }}",
+              "type": "string"
+            },
+            {
+              "id": "a6",
+              "name": "prompt_personalizado",
+              "value": "={{ $input.item.json.prompt_personalizado }}",
+              "type": "string"
+            },
+            {
+              "id": "a7",
+              "name": "evolution_host",
+              "value": "={{ $input.item.json.evolution_host }}",
+              "type": "string"
+            },
+            {
+              "id": "a8",
+              "name": "evolution_apikey",
+              "value": "={{ $input.item.json.evolution_apikey }}",
+              "type": "string"
+            },
+            {
+              "id": "a9",
+              "name": "evolution_instance",
+              "value": "={{ $input.item.json.evolution_instance }}",
+              "type": "string"
+            },
+            {
+              "id": "a10",
+              "name": "telefono_cliente",
+              "value": "={{ $('Extraer datos del mensaje').item.json.from }}",
+              "type": "string"
+            },
+            {
+              "id": "a10b",
+              "name": "remote_jid",
+              "value": "={{ $('Extraer datos del mensaje').item.json.remoteJid }}",
+              "type": "string"
+            },
+            {
+              "id": "a11",
+              "name": "mensaje",
+              "value": "={{ $('Extraer datos del mensaje').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "a12",
+              "name": "push_name",
+              "value": "={{ $('Extraer datos del mensaje').item.json.pushName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "485c74d6-a4e1-4779-b418-cf04b1129b6d",
+      "name": "Preparar contexto",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcarakhgtyqylwcizehh.supabase.co/rest/v1/conversaciones",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjYXJha2hndHlxeWx3Y2l6ZWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzMzOTIsImV4cCI6MjA5MzY0OTM5Mn0.Kzh2JxKFDVab74lneUZ0bZtc7hjGcfzGhrbOCXDZWpo"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjYXJha2hndHlxeWx3Y2l6ZWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzMzOTIsImV4cCI6MjA5MzY0OTM5Mn0.Kzh2JxKFDVab74lneUZ0bZtc7hjGcfzGhrbOCXDZWpo"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ negocio_id: $input.item.json.negocio_id, telefono_cliente: $input.item.json.telefono_cliente, mensaje: $input.item.json.mensaje, rol: 'user' }) }}",
+        "options": {}
+      },
+      "id": "49597ae0-0917-4918-ae23-b28093da87c0",
+      "name": "Guardar mensaje cliente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1008,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://rcarakhgtyqylwcizehh.supabase.co/rest/v1/conversaciones?negocio_id=eq.{{ $('Preparar contexto').item.json.negocio_id }}&telefono_cliente=eq.{{ $('Preparar contexto').item.json.telefono_cliente }}&select=mensaje,respuesta,rol&order=created_at.desc&limit=10",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjYXJha2hndHlxeWx3Y2l6ZWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzMzOTIsImV4cCI6MjA5MzY0OTM5Mn0.Kzh2JxKFDVab74lneUZ0bZtc7hjGcfzGhrbOCXDZWpo"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjYXJha2hndHlxeWx3Y2l6ZWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzMzOTIsImV4cCI6MjA5MzY0OTM5Mn0.Kzh2JxKFDVab74lneUZ0bZtc7hjGcfzGhrbOCXDZWpo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "813b2549-ca04-4fb0-9408-2bb28b9f0c3e",
+      "name": "Recuperar historial",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1264,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const contexto = $('Preparar contexto').item.json;\nconst historialRaw = $input.first().json;\n\n// Historial como array (Supabase devuelve array directamente)\nconst historial = Array.isArray(historialRaw) ? historialRaw : [];\n\n// Construir mensajes para OpenRouter\nconst systemPrompt = `${contexto.prompt_personalizado}\n\nInformación del negocio:\nNombre: ${contexto.negocio_nombre}\nDescripción: ${contexto.negocio_descripcion}\nHorario: ${contexto.negocio_horario}\nDirección: ${contexto.negocio_direccion}\n\nCliente: ${contexto.push_name}`;\n\n// Historial en orden cronológico (viene desc, invertimos)\nconst mensajesHistorial = historial\n  .reverse()\n  .flatMap(h => {\n    const msgs = [];\n    if (h.mensaje) msgs.push({ role: 'user', content: h.mensaje });\n    if (h.respuesta) msgs.push({ role: 'assistant', content: h.respuesta });\n    return msgs;\n  });\n\nconst messages = [\n  { role: 'system', content: systemPrompt },\n  ...mensajesHistorial,\n  { role: 'user', content: contexto.mensaje }\n];\n\nreturn [{\n  json: {\n    messages,\n    negocio_id: contexto.negocio_id,\n    telefono_cliente: contexto.telefono_cliente,\n    remote_jid: contexto.remote_jid,\n    mensaje: contexto.mensaje,\n    evolution_host: contexto.evolution_host,\n    evolution_apikey: contexto.evolution_apikey,\n    evolution_instance: contexto.evolution_instance\n  }\n}];"
+      },
+      "id": "8eff8818-adb6-4580-8870-5dbf39c7a9e2",
+      "name": "Formatear historial y llamar IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{TU_API_KEY_OPENROUTER}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'openai/gpt-4o-mini', messages: $input.item.json.messages, max_tokens: 500, temperature: 0.7 }) }}",
+        "options": {}
+      },
+      "id": "b461ab09-9462-4f90-b505-913c1882b4af",
+      "name": "OpenRouter IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1744,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "r1",
+              "name": "respuesta_texto",
+              "value": "={{ $input.item.json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "r2",
+              "name": "negocio_id",
+              "value": "={{ $('Formatear historial y llamar IA').item.json.negocio_id }}",
+              "type": "string"
+            },
+            {
+              "id": "r3",
+              "name": "telefono_cliente",
+              "value": "={{ $('Formatear historial y llamar IA').item.json.telefono_cliente }}",
+              "type": "string"
+            },
+            {
+              "id": "r3b",
+              "name": "remote_jid",
+              "value": "={{ $('Formatear historial y llamar IA').item.json.remote_jid }}",
+              "type": "string"
+            },
+            {
+              "id": "r4",
+              "name": "mensaje_original",
+              "value": "={{ $('Formatear historial y llamar IA').item.json.mensaje }}",
+              "type": "string"
+            },
+            {
+              "id": "r5",
+              "name": "evolution_host",
+              "value": "={{ $('Formatear historial y llamar IA').item.json.evolution_host }}",
+              "type": "string"
+            },
+            {
+              "id": "r6",
+              "name": "evolution_apikey",
+              "value": "={{ $('Formatear historial y llamar IA').item.json.evolution_apikey }}",
+              "type": "string"
+            },
+            {
+              "id": "r7",
+              "name": "evolution_instance",
+              "value": "={{ $('Formatear historial y llamar IA').item.json.evolution_instance }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "22cfb85e-a7f1-490a-9727-8674a42c2488",
+      "name": "Preparar respuesta",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1984,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ (() => { const host = ($input.item.json.evolution_host || '').replace(/^\\s*https?:\\/\\//i, '').replace(/\\/+$/, ''); const instance = encodeURIComponent($input.item.json.evolution_instance || ''); return `https://${host}/message/sendText/${instance}`; })() }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $input.item.json.evolution_apikey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const jid = String($input.item.json.remote_jid || ''); const tel = String($input.item.json.telefono_cliente || '').replace(/\\D/g, ''); const number = jid || tel; const text = String($input.item.json.respuesta_texto || ''); return JSON.stringify({ number, text, options: { delay: 1200, presence: 'composing' } }); })() }}",
+        "options": {}
+      },
+      "id": "72c9567a-dec9-4e3a-a448-01382fb6c3b9",
+      "name": "Enviar respuesta WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2224,
+        64
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcarakhgtyqylwcizehh.supabase.co/rest/v1/conversaciones",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjYXJha2hndHlxeWx3Y2l6ZWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzMzOTIsImV4cCI6MjA5MzY0OTM5Mn0.Kzh2JxKFDVab74lneUZ0bZtc7hjGcfzGhrbOCXDZWpo"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjYXJha2hndHlxeWx3Y2l6ZWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzMzOTIsImV4cCI6MjA5MzY0OTM5Mn0.Kzh2JxKFDVab74lneUZ0bZtc7hjGcfzGhrbOCXDZWpo"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ negocio_id: $input.item.json.negocio_id, telefono_cliente: $input.item.json.telefono_cliente, mensaje: $input.item.json.mensaje_original, respuesta: $input.item.json.respuesta_texto, rol: 'assistant' }) }}",
+        "options": {}
+      },
+      "id": "218d1451-3839-4c98-b31d-f038f49698ab",
+      "name": "Guardar respuesta en Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2464,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": {}
+      },
+      "id": "ab2468f0-4312-404f-8a66-ea670ade1cc4",
+      "name": "Responder OK a Evolution",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2704,
+        64
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "ffd915e8-88e7-45ed-8b61-0f220faa4b75",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcarakhgtyqylwcizehh.supabase.co/rest/v1/agent_errors",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjYXJha2hndHlxeWx3Y2l6ZWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzMzOTIsImV4cCI6MjA5MzY0OTM5Mn0.Kzh2JxKFDVab74lneUZ0bZtc7hjGcfzGhrbOCXDZWpo"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjYXJha2hndHlxeWx3Y2l6ZWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzMzOTIsImV4cCI6MjA5MzY0OTM5Mn0.Kzh2JxKFDVab74lneUZ0bZtc7hjGcfzGhrbOCXDZWpo"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workflow_name\": \"={{ $input.item.json.workflow.name }}\",\n  \"node_name\": \"={{ $input.item.json.execution.lastNodeExecuted }}\",\n  \"error_message\": \"={{ $input.item.json.error.message }}\"\n}",
+        "options": {}
+      },
+      "id": "763af412-9a6e-4fef-80cb-2e8a3013e7eb",
+      "name": "Guardar error en Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2464,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 📥 ENTRADA\nURL: /webhook/whatsapp-agente\nFiltro: solo MESSAGES_UPSERT + fromMe: false",
+        "height": 80,
+        "width": 500
+      },
+      "id": "a6e5e23c-e036-4719-a3c8-917af26c032f",
+      "name": "ENTRADA - Webhook Evolution",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🏢 NEGOCIO\nBusca por evolution_instance → carga prompt, host, apikey dinámicamente",
+        "height": 80,
+        "width": 500
+      },
+      "id": "2ab2bbe9-0487-4ee6-910f-7ac04fdc71e2",
+      "name": "NEGOCIO - Busqueda dinamica",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        272,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 IA — OpenRouter gpt-4o-mini\nHistorial últimas 10 conversaciones + prompt del negocio",
+        "height": 80,
+        "width": 500
+      },
+      "id": "80619488-c3b9-4e33-b0d4-6027abcafd9d",
+      "name": "IA - OpenRouter",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🚨 ERROR MONITOR\nCualquier fallo → tabla agent_errors en Supabase",
+        "height": 80,
+        "width": 500
+      },
+      "id": "4573e27f-9298-4338-a376-69f1ba3d6773",
+      "name": "ERROR - Monitor",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        224
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Evolution": {
+      "main": [
+        [
+          {
+            "node": "Extraer datos del mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer datos del mensaje": {
+      "main": [
+        [
+          {
+            "node": "Buscar negocio por instance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar negocio por instance": {
+      "main": [
+        [
+          {
+            "node": "Negocio encontrado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Negocio encontrado?": {
+      "main": [
+        [
+          {
+            "node": "Preparar contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar contexto": {
+      "main": [
+        [
+          {
+            "node": "Guardar mensaje cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar mensaje cliente": {
+      "main": [
+        [
+          {
+            "node": "Recuperar historial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recuperar historial": {
+      "main": [
+        [
+          {
+            "node": "Formatear historial y llamar IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear historial y llamar IA": {
+      "main": [
+        [
+          {
+            "node": "OpenRouter IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter IA": {
+      "main": [
+        [
+          {
+            "node": "Preparar respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar respuesta": {
+      "main": [
+        [
+          {
+            "node": "Enviar respuesta WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar respuesta WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Guardar respuesta en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Guardar respuesta en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar respuesta en Supabase": {
+      "main": [
+        [
+          {
+            "node": "Responder OK a Evolution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Guardar error en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "be724714-6e2d-4686-8a42-434fe97af470",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "92f72eaa1a483b11a6d6877f4419805a6005a975c3d38217b22885187092545f"
+  },
+  "id": "UFAMtSWPUPD9ww2w",
+  "tags": []
+}

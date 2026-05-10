@@ -1,0 +1,1632 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "",
+    "title": "standard public schema",
+    "version": "14.5"
+  },
+  "host": "dovoggkeoguqtscmsjna.supabase.co:443",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json",
+    "application/vnd.pgrst.object+json;nulls=stripped",
+    "application/vnd.pgrst.object+json",
+    "text/csv"
+  ],
+  "produces": [
+    "application/json",
+    "application/vnd.pgrst.object+json;nulls=stripped",
+    "application/vnd.pgrst.object+json",
+    "text/csv"
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "produces": [
+          "application/openapi+json",
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "OpenAPI description (this document)",
+        "tags": [
+          "Introspection"
+        ]
+      }
+    },
+    "/agent_errors": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.negocio_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.workflow_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.node_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.error_message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/agent_errors"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "agent_errors"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.agent_errors"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "agent_errors"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.negocio_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.workflow_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.node_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.error_message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "agent_errors"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.negocio_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.workflow_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.node_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.error_message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.agent_errors.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.agent_errors"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "agent_errors"
+        ]
+      }
+    },
+    "/sesiones": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.negocio_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.session_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.metadata"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/sesiones"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "sesiones"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.sesiones"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "sesiones"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.negocio_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.session_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.metadata"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "sesiones"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.negocio_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.session_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.metadata"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.sesiones.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.sesiones"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "sesiones"
+        ]
+      }
+    },
+    "/citas": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.citas.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.negocio_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.session_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.fecha_hora"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.nombre_cliente"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.servicio"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.estado"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.cliente_telefono"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.duracion_min"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.notas"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/citas"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "citas"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.citas"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "citas"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.citas.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.negocio_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.session_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.fecha_hora"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.nombre_cliente"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.servicio"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.estado"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.cliente_telefono"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.duracion_min"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.notas"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "citas"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.citas.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.negocio_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.session_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.fecha_hora"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.nombre_cliente"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.servicio"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.estado"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.cliente_telefono"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.duracion_min"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.notas"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.citas.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.citas"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "citas"
+        ]
+      }
+    },
+    "/mensajes": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.negocio_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.session_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.rol"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.contenido"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.tipo_agente"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.canal"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/mensajes"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "mensajes"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.mensajes"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "mensajes"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.negocio_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.session_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.rol"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.contenido"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.tipo_agente"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.canal"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "mensajes"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.negocio_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.session_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.rol"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.contenido"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.tipo_agente"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.mensajes.canal"
+          },
+          {
+            "$ref": "#/parameters/body.mensajes"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "mensajes"
+        ]
+      }
+    },
+    "/negocios": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.negocios.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.nombre"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.descripcion"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.horario"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.direccion"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.prompt_sistema"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.owner_user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.evolution_host"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.evolution_apikey"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.evolution_instance"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/negocios"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "negocios"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.negocios"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "negocios"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.negocios.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.nombre"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.descripcion"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.horario"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.direccion"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.prompt_sistema"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.owner_user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.evolution_host"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.evolution_apikey"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.evolution_instance"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "negocios"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.negocios.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.nombre"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.descripcion"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.horario"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.direccion"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.prompt_sistema"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.owner_user_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.evolution_host"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.evolution_apikey"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.evolution_instance"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.negocios.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.negocios"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "negocios"
+        ]
+      }
+    },
+    "/rpc/is_owner_of": {
+      "get": {
+        "parameters": [
+          {
+            "format": "uuid",
+            "in": "query",
+            "name": "_negocio_id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) is_owner_of"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "_negocio_id": {
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "_negocio_id"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) is_owner_of"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "agent_errors": {
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "negocio_id": {
+          "description": "Note:\nThis is a Foreign Key to `negocios.id`.<fk table='negocios' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "workflow_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "node_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "error_message": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "sesiones": {
+      "required": [
+        "id",
+        "session_id"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "negocio_id": {
+          "description": "Note:\nThis is a Foreign Key to `negocios.id`.<fk table='negocios' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "session_id": {
+          "format": "text",
+          "type": "string"
+        },
+        "metadata": {
+          "format": "jsonb"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "citas": {
+      "required": [
+        "id",
+        "session_id",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "negocio_id": {
+          "description": "Note:\nThis is a Foreign Key to `negocios.id`.<fk table='negocios' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "session_id": {
+          "format": "text",
+          "type": "string"
+        },
+        "fecha_hora": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "nombre_cliente": {
+          "format": "text",
+          "type": "string"
+        },
+        "servicio": {
+          "format": "text",
+          "type": "string"
+        },
+        "estado": {
+          "default": "pendiente",
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "cliente_telefono": {
+          "format": "text",
+          "type": "string"
+        },
+        "duracion_min": {
+          "default": 30,
+          "format": "integer",
+          "type": "integer"
+        },
+        "notas": {
+          "format": "text",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "mensajes": {
+      "required": [
+        "id",
+        "session_id",
+        "contenido",
+        "canal"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "negocio_id": {
+          "description": "Note:\nThis is a Foreign Key to `negocios.id`.<fk table='negocios' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "session_id": {
+          "format": "text",
+          "type": "string"
+        },
+        "rol": {
+          "format": "text",
+          "type": "string"
+        },
+        "contenido": {
+          "format": "text",
+          "type": "string"
+        },
+        "tipo_agente": {
+          "default": "conversacional",
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "canal": {
+          "default": "web",
+          "format": "text",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "negocios": {
+      "required": [
+        "id",
+        "nombre",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "nombre": {
+          "format": "text",
+          "type": "string"
+        },
+        "descripcion": {
+          "format": "text",
+          "type": "string"
+        },
+        "horario": {
+          "format": "text",
+          "type": "string"
+        },
+        "direccion": {
+          "format": "text",
+          "type": "string"
+        },
+        "prompt_sistema": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "owner_user_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "evolution_host": {
+          "format": "text",
+          "type": "string"
+        },
+        "evolution_apikey": {
+          "format": "text",
+          "type": "string"
+        },
+        "evolution_instance": {
+          "format": "text",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "parameters": {
+    "preferParams": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "in": "header",
+      "type": "string"
+    },
+    "preferReturn": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "return=representation",
+        "return=minimal",
+        "return=none"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "preferCount": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "count=none"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "preferPost": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "return=representation",
+        "return=minimal",
+        "return=none",
+        "resolution=ignore-duplicates",
+        "resolution=merge-duplicates"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "select": {
+      "name": "select",
+      "description": "Filtering Columns",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "on_conflict": {
+      "name": "on_conflict",
+      "description": "On Conflict",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "order": {
+      "name": "order",
+      "description": "Ordering",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "range": {
+      "name": "Range",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "header",
+      "type": "string"
+    },
+    "rangeUnit": {
+      "name": "Range-Unit",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "default": "items",
+      "in": "header",
+      "type": "string"
+    },
+    "offset": {
+      "name": "offset",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "limit": {
+      "name": "limit",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.agent_errors": {
+      "name": "agent_errors",
+      "description": "agent_errors",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/agent_errors"
+      }
+    },
+    "rowFilter.agent_errors.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.agent_errors.negocio_id": {
+      "name": "negocio_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.agent_errors.workflow_name": {
+      "name": "workflow_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.agent_errors.node_name": {
+      "name": "node_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.agent_errors.error_message": {
+      "name": "error_message",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.agent_errors.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.sesiones": {
+      "name": "sesiones",
+      "description": "sesiones",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/sesiones"
+      }
+    },
+    "rowFilter.sesiones.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.sesiones.negocio_id": {
+      "name": "negocio_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.sesiones.session_id": {
+      "name": "session_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.sesiones.metadata": {
+      "name": "metadata",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.sesiones.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.citas": {
+      "name": "citas",
+      "description": "citas",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/citas"
+      }
+    },
+    "rowFilter.citas.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.citas.negocio_id": {
+      "name": "negocio_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.citas.session_id": {
+      "name": "session_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.citas.fecha_hora": {
+      "name": "fecha_hora",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.citas.nombre_cliente": {
+      "name": "nombre_cliente",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.citas.servicio": {
+      "name": "servicio",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.citas.estado": {
+      "name": "estado",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.citas.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.citas.cliente_telefono": {
+      "name": "cliente_telefono",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.citas.duracion_min": {
+      "name": "duracion_min",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.citas.notas": {
+      "name": "notas",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.citas.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.mensajes": {
+      "name": "mensajes",
+      "description": "mensajes",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/mensajes"
+      }
+    },
+    "rowFilter.mensajes.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.mensajes.negocio_id": {
+      "name": "negocio_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.mensajes.session_id": {
+      "name": "session_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.mensajes.rol": {
+      "name": "rol",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.mensajes.contenido": {
+      "name": "contenido",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.mensajes.tipo_agente": {
+      "name": "tipo_agente",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.mensajes.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.mensajes.canal": {
+      "name": "canal",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.negocios": {
+      "name": "negocios",
+      "description": "negocios",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/negocios"
+      }
+    },
+    "rowFilter.negocios.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.negocios.nombre": {
+      "name": "nombre",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.negocios.descripcion": {
+      "name": "descripcion",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.negocios.horario": {
+      "name": "horario",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.negocios.direccion": {
+      "name": "direccion",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.negocios.prompt_sistema": {
+      "name": "prompt_sistema",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.negocios.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.negocios.owner_user_id": {
+      "name": "owner_user_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.negocios.evolution_host": {
+      "name": "evolution_host",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.negocios.evolution_apikey": {
+      "name": "evolution_apikey",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.negocios.evolution_instance": {
+      "name": "evolution_instance",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.negocios.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    }
+  },
+  "externalDocs": {
+    "description": "PostgREST Documentation",
+    "url": "https://postgrest.org/en/v14/references/api.html"
+  }
+}

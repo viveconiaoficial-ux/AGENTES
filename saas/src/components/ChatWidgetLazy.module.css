@@ -1,0 +1,13 @@
+.widgetLoading {
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.widgetLoadingText {
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+}

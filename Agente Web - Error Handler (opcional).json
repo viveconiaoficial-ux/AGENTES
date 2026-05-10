@@ -1,0 +1,64 @@
+{
+  "name": "Agente Web - Error Handler (opcional v1)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "error-trigger-ageweb-001",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $input.first().json || {};\nreturn [{ json: {\n  momento: new Date().toISOString(),\n  workflow_fallo: p.workflow?.name || p.workflowName,\n  nodo: p.node?.name || p.nodeName,\n  mensaje: p.execution?.error?.message || p.error?.message || String(p.trigger?.error || 'error')\n} }];"
+      },
+      "id": "error-log-shape-001",
+      "name": "Formatear para log",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {},
+      "id": "error-handler-fin-001",
+      "name": "Fin",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [480, 0]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Formatear para log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear para log": {
+      "main": [
+        [
+          {
+            "node": "Fin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "meta": {
+    "instanceId": ""
+  }
+}

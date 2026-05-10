@@ -1,0 +1,181 @@
+/* Fondo y tipografía del login/register: auto-contenido por si falla Tailwind en dev. */
+.shell {
+  position: relative;
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  padding: 0 1.5rem;
+  box-sizing: border-box;
+  background:
+    radial-gradient(
+      60% 40% at 80% 10%,
+      rgba(124, 156, 255, 0.18) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      50% 50% at 10% 90%,
+      rgba(124, 156, 255, 0.1) 0%,
+      transparent 60%
+    ),
+    #050507;
+  color: #ffffff;
+  font-family:
+    Inter,
+    "SF Pro Display",
+    Geist,
+    system-ui,
+    -apple-system,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 24rem;
+}
+
+.header {
+  margin-bottom: 1.75rem;
+  text-align: center;
+}
+
+.brand {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.brandMuted {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.title {
+  margin: 1.5rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.subtitle {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.card {
+  border-radius: 1rem;
+  padding: 1.25rem;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 20, 24, 0.78) 0%,
+    rgba(9, 9, 11, 0.78) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+}
+
+.cardStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: block;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.input {
+  margin-top: 0.375rem;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  outline: none;
+}
+
+.input:focus {
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.errorBox {
+  border-radius: 0.5rem;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.1);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: #fca5a5;
+}
+
+.submit {
+  width: 100%;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #000000;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.submit:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.footer {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.bodyText {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.linkBtn {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  color: #000000;
+  background: #ffffff;
+  text-decoration: none;
+}
+
+.linkBtn:hover {
+  background: rgba(255, 255, 255, 0.9);
+}

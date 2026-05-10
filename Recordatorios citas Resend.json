@@ -1,0 +1,297 @@
+{
+  "name": "Recordatorios citas (Resend)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 20
+            }
+          ]
+        }
+      },
+      "id": "sched-recordatorio-001",
+      "name": "Cada 20 min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const horas = 24;\nconst ventanaMin = 45;\nconst t0 = Date.now();\nconst centro = t0 + horas * 3600000;\nconst pad = ventanaMin * 60000;\nconst gte = new Date(centro - pad).toISOString();\nconst lte = new Date(centro + pad).toISOString();\nconst base = 'https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/citas';\nconst sel = 'id,negocio_id,fecha_hora,nombre_cliente,nombre,apellido,email,servicio,recordatorio_enviado,negocios(nombre)';\nconst url = base + '?estado=in.(pendiente,confirmada)&recordatorio_enviado=eq.false&fecha_hora=gte.' + encodeURIComponent(gte) + '&fecha_hora=lte.' + encodeURIComponent(lte) + '&select=' + sel + '&order=fecha_hora.asc';\nreturn [{ json: { requestUrl: url } }];"
+      },
+      "id": "prep-url-record-001",
+      "name": "URL citas recordatorio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.requestUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 45000
+        }
+      },
+      "id": "get-citas-record-001",
+      "name": "Obtener citas ventana",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        520,
+        300
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nlet rows = [];\nif (Array.isArray(raw)) rows = raw;\nelse if (raw && Array.isArray(raw.data)) rows = raw.data;\nif (!rows.length) return [];\nconst out = [];\nfor (const r of rows) {\n  if (r && r.id && r.email && String(r.email).trim()) out.push({ json: r });\n}\nreturn out;"
+      },
+      "id": "to-items-record-001",
+      "name": "Un item por cita",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "split-record-001",
+      "name": "Bucle citas",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $json;\nconst email = String(r.email || '').trim();\nif (!email || !r.id) return [];\nlet marca = 'Tu cita';\nif (r.negocios && typeof r.negocios === 'object') {\n  marca = String(r.negocios.nombre || '').trim() || marca;\n}\nconst resend_from_marca = marca.replace(/[<>\"']/g, '').trim() || 'Reserva';\nconst RESEND_FROM_ADDRESS = 'citas@vive-con-ia.com'; // Igual que en el flujo principal (dominio Resend vive-con-ia.com)\nconst resend_from_full = resend_from_marca + ' <' + RESEND_FROM_ADDRESS + '>';\nconst fechaTxt = r.fecha_hora ? new Date(r.fecha_hora).toLocaleString('es-ES', { weekday: 'long', day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }) : '';\nconst nom = String(r.nombre_cliente || [r.nombre, r.apellido].filter(Boolean).join(' ') || 'Cliente').trim();\nconst svc = r.servicio ? String(r.servicio) : '';\nfunction esc(s) {\n  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');\n}\nconst html = '<p>Hola ' + esc(nom) + ',</p><p>Te recordamos tu cita en <strong>' + esc(marca) + '</strong>' + (svc ? ' para <strong>' + esc(svc) + '</strong>' : '') + ' el <strong>' + esc(fechaTxt) + '</strong> (hora España).</p><p>Si necesitas cambiar algo, contacta con ' + esc(marca) + '.</p>';\nreturn [{ json: {\n  resend_plain_to: email,\n  resend_plain_subject: 'Recordatorio de cita — ' + marca,\n  resend_plain_html: html,\n  resend_from_full: resend_from_full,\n  cita_id: r.id\n}}];"
+      },
+      "id": "prep-mail-record-001",
+      "name": "Preparar email recordatorio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.RESEND_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: $json.resend_from_full, to: [ $json.resend_plain_to ], subject: $json.resend_plain_subject, html: $json.resend_plain_html }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "resend-record-001",
+      "name": "Resend Recordatorio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1520,
+        220
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "alwaysOutputData": true,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/citas?id=eq.{{ $('Preparar email recordatorio').item.json.cita_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recordatorio_enviado: true }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "patch-recordatorio-001",
+      "name": "Marcar recordatorio enviado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1760,
+        220
+      ],
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    }
+  ],
+  "connections": {
+    "Cada 20 min": {
+      "main": [
+        [
+          {
+            "node": "URL citas recordatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL citas recordatorio": {
+      "main": [
+        [
+          {
+            "node": "Obtener citas ventana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener citas ventana": {
+      "main": [
+        [
+          {
+            "node": "Un item por cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Un item por cita": {
+      "main": [
+        [
+          {
+            "node": "Bucle citas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bucle citas": {
+      "main": [
+        [
+          {
+            "node": "Preparar email recordatorio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Preparar email recordatorio": {
+      "main": [
+        [
+          {
+            "node": "Resend Recordatorio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resend Recordatorio": {
+      "main": [
+        [
+          {
+            "node": "Marcar recordatorio enviado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar recordatorio enviado": {
+      "main": [
+        [
+          {
+            "node": "Bucle citas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {},
+  "pinData": {}
+}

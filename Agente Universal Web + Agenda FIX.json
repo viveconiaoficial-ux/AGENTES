@@ -1,0 +1,2506 @@
+{
+  "name": "Agente Universal Web + Agenda (FIXED v16)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agente-web",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "2f5e8505-1950-406f-acd0-c512706cac07",
+      "name": "Webhook Cursor",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        480
+      ],
+      "webhookId": "5c872e5f-5212-4838-9331-783099c5dcd7"
+    },
+    {
+      "parameters": {
+        "jsCode": "const root = $input.first().json || {};\nlet body = root.body;\nif (!body || typeof body !== 'object') {\n  if (root.negocio_id != null) body = root;\n  else body = {};\n}\nconst negocio_id = String(body.negocio_id ?? '').trim();\nconst session_id = String(body.session_id ?? '').trim();\nfunction uuidLike(s) {\n  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s);\n}\nconst sidOk = session_id.length >= 6 && session_id.length <= 200 && /^[a-zA-Z0-9_-]+$/.test(session_id);\nconst valid = uuidLike(negocio_id) && sidOk;\nlet respuesta_texto = '';\nif (!uuidLike(negocio_id)) {\n  respuesta_texto = 'La petición no es válida (no se identifica el negocio). Recarga la página e inténtalo de nuevo.';\n} else if (!sidOk) {\n  respuesta_texto = 'La sesión no es válida. Recarga o abre de nuevo el chat.';\n}\nreturn [{ json: { entrada_valida: valid, respuesta_texto } }];"
+      },
+      "id": "validar-entrada-webhook-001",
+      "name": "Validar Entrada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        60,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c-entrada-ok",
+              "leftValue": "={{ $json.entrada_valida }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-entrada-valida-001",
+      "name": "¿Entrada webhook válida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        360,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const v = $('Validar Entrada').first().json;\nreturn [{ json: {\n  respuesta_texto: v.respuesta_texto || 'No se ha podido procesar la petición. Vuelve a intentarlo.',\n  entrada_ok: false\n} }];"
+      },
+      "id": "resp-entrada-invalida-001",
+      "name": "Respuesta Entrada Inválida",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/negocios?id=eq.{{ $('Webhook Cursor').first().json.body.negocio_id }}&select=*&limit=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 45000
+        }
+      },
+      "id": "39c6c095-4fe7-481f-868c-fb52037d212a",
+      "name": "Datos Negocio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        660,
+        410
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/mensajes?negocio_id=eq.{{ $('Webhook Cursor').first().json.body.negocio_id }}&session_id=eq.{{ $('Webhook Cursor').first().json.body.session_id }}&order=created_at.desc&limit=10&select=rol,contenido,created_at",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 45000
+        }
+      },
+      "id": "080c9737-9622-4641-813f-f96f59d4b48d",
+      "name": "Cargar Historial",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        960,
+        480
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "let data = [];\ntry {\n  const raw = $input.first()?.json;\n  if (Array.isArray(raw)) {\n    data = raw;\n  } else if (raw && Array.isArray(raw.data)) {\n    data = raw.data;\n  } else if (raw && typeof raw === 'object') {\n    data = [raw];\n  }\n} catch(e) { data = []; }\nreturn [{ json: { data } }];"
+      },
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Normalizar Historial",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/sesiones?negocio_id=eq.{{ $('Webhook Cursor').first().json.body.negocio_id }}&session_id=eq.{{ $('Webhook Cursor').first().json.body.session_id }}&select=datos_cita,cancelacion_pendiente&limit=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 45000
+        }
+      },
+      "id": "ee11ee22-3333-4444-5555-666677778888",
+      "name": "Cargar Estado Cita",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1560,
+        480
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\nconst wh = $('Webhook Cursor').first().json.body || {};\nlet mensajeUser = String(wh.mensaje ?? '');\nif (mensajeUser.length > 12000) mensajeUser = mensajeUser.slice(0, 12000);\nlet negocio = $('Datos Negocio').first().json;\nif (Array.isArray(negocio)) negocio = negocio[0] || {};\nif (!negocio || typeof negocio !== 'object') negocio = {};\n\nlet hist = $('Normalizar Historial').first().json.data;\nif (!Array.isArray(hist)) hist = [];\nhist = hist.slice().reverse();\n\nlet estadoPrev = {};\nlet cancelacionPendiente = null;\ntry {\n  const items = $('Cargar Estado Cita').all() || [];\n  for (const it of items) {\n    const j = it?.json;\n    if (!j) continue;\n    if (Array.isArray(j) && j.length) {\n      const row = j[0];\n      if (row?.datos_cita && typeof row.datos_cita === 'object') estadoPrev = row.datos_cita;\n      if (row?.cancelacion_pendiente && typeof row.cancelacion_pendiente === 'object') cancelacionPendiente = row.cancelacion_pendiente;\n      break;\n    }\n    if (j?.datos_cita && typeof j.datos_cita === 'object') estadoPrev = j.datos_cita;\n    if (j?.cancelacion_pendiente && typeof j.cancelacion_pendiente === 'object') cancelacionPendiente = j.cancelacion_pendiente;\n    if (j?.datos_cita || j?.cancelacion_pendiente) break;\n  }\n} catch(e) { estadoPrev = {}; cancelacionPendiente = null; }\n\nfunction sanePend(p) {\n  if (!p || typeof p !== 'object' || Array.isArray(p)) return null;\n  const ex = !!p.esperando_confirmacion;\n  const ec = !!p.esperando_contacto;\n  if (ex && ec) return null;\n  if (ex && (!Array.isArray(p.citas) || !p.citas.length)) return null;\n  return p;\n}\ncancelacionPendiente = sanePend(cancelacionPendiente);\n\nconst hoyISO = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' });\nconst hoyDiaSemana = new Date().toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid', weekday: 'long' });\nconst yearActual = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Madrid' }).slice(0,4);\n\nconst sysPrompt = [\n  `Eres el asistente del negocio \\\"${negocio.nombre || ''}\\\".`,\n  negocio.prompt_personalizado || negocio.prompt_sistema || '',\n  negocio.descripcion ? `Sobre el negocio: ${negocio.descripcion}` : '',\n  negocio.horario ? `Horario: ${negocio.horario}` : '',\n  negocio.direccion ? `Dirección: ${negocio.direccion}` : '',\n  '',\n  'Reglas:',\n  '- Sé claro, breve y útil.',\n  '- Si el cliente quiere reservar/agendar/pedir cita: pregúntale UNO A UNO los datos que falten en este orden: día, hora, nombre, apellido, teléfono, email.',\n  '- NUNCA confirmes ni menciones una fecha o hora que el cliente NO haya dicho explícitamente.',\n  '- Si ya tienes un dato confirmado por el cliente en el historial, no lo vuelvas a pedir.',\n  '- Si el cliente dice que ya dio nombre o datos y el HISTORIAL de esta conversación contiene ese nombre o una confirmación previa con sus datos, reconócelo y sigue con la reserva; no digas que no tienes acceso a información previa.',\n  '- Si solo conversa o pregunta, responde con naturalidad.',\n  (cancelacionPendiente && (cancelacionPendiente.esperando_confirmacion || cancelacionPendiente.esperando_contacto)) ? '- Hay una anulación de cita en curso en esta conversación: mantén el foco en ese proceso hasta que el cliente confirme, rechace o abandone.' : '',\n  `- Hoy es ${hoyISO} (${hoyDiaSemana}). Estamos en el año ${yearActual}.`\n].filter(Boolean).join('\\n');\n\nconst messages = [{ role: 'system', content: sysPrompt }];\nfor (const m of hist) {\n  if (!m || !m.contenido) continue;\n  if (m.rol === 'user' || m.rol === 'assistant') {\n    messages.push({ role: m.rol, content: String(m.contenido) });\n  }\n}\nmessages.push({ role: 'user', content: mensajeUser });\n\nconst historialTexto = hist\n  .map(m => `${m.rol === 'user' ? 'Cliente' : 'Asistente'}: ${m.contenido}`)\n  .join('\\n');\n\nreturn [{\n  json: {\n    negocio_id: wh.negocio_id,\n    session_id: wh.session_id,\n    mensaje: mensajeUser,\n    negocio,\n    historial: hist,\n    historialTexto,\n    estadoPrev,\n    cancelacionPendiente,\n    system_prompt: sysPrompt,\n    messages,\n    hoy: hoyISO,\n    yearActual\n  }\n}];\n\n} catch (e) {\n  const wh = $('Webhook Cursor').first().json.body || {};\n  const msg = String(wh.mensaje ?? '').slice(0, 12000);\n  const hoyISO = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' });\n  const yearActual = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Madrid' }).slice(0, 4);\n  const sys = 'Eres un asistente amable y profesional. Responde con una sola frase corta: discúlpate por un problema técnico momentáneo y pide que el usuario repita el mensaje en unos segundos. No inventes datos del negocio ni citas.';\n  return [{\n    json: {\n      negocio_id: wh.negocio_id,\n      session_id: wh.session_id,\n      mensaje: msg,\n      negocio: {},\n      historial: [],\n      historialTexto: '',\n      estadoPrev: {},\n      cancelacionPendiente: null,\n      system_prompt: sys,\n      messages: [{ role: 'system', content: sys }, { role: 'user', content: msg || '(mensaje vacío)' }],\n      hoy: hoyISO,\n      yearActual,\n      _contexto_degradado: true\n    }\n  }];\n}\n"
+      },
+      "id": "3d534a19-3683-4287-a2d3-95f4b7a3732b",
+      "name": "Preparar Contexto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1860,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\nconst ctx = $('Preparar Contexto').first().json;\nconst pend = ctx.cancelacionPendiente || {};\nconst raw = String(ctx.mensaje || '').trim();\nconst msg = raw.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');\n\nfunction isConfirm(s) {\n  if (!s) return false;\n  if (/^(si|sip|sisi|ok|vale|claro|genial|perfecto|adelante|exacto|correcto|efectivo|por\\s*supuesto|de\\s*acuerdo|confirmo|confirmar)\\b/i.test(s)) return true;\n  if (/^\\s*(si|ok|vale)(\\s*[!\\.\\s]*)?$/i.test(s)) return true;\n  return false;\n}\nfunction isDeny(s) {\n  if (!s) return false;\n  if (/^(no|nop|nope|mejor\\s*no|dejalo|dejemoslo|negativo|para\\s+nada|no\\s+cancel)\\b/i.test(s)) return true;\n  if (/^\\s*no(\\s+gracias)?\\s*[!.?\\s]*$/i.test(s)) return true;\n  return false;\n}\n\nfunction pareceNuevaReservaSinCancelar(s) {\n  if (!s) return false;\n  if (/\\b(cancelar|anular|eliminar|dar\\s+de\\s+baja|no\\s+podre\\s+acudir)\\b/.test(s)) return false;\n  if (/\\b(el\\s+)?(lunes|martes|miercoles|jueves|viernes|sabado|domingo)\\b/.test(s) && /\\d/.test(s)) return true;\n  if (/\\b\\d{1,2}\\s+de\\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\\b/.test(s)) return true;\n  if (/\\b(manana|pasado\\s+manana|hoy)\\b/.test(s) && /\\b(las\\s+)?\\d{1,2}\\b/.test(s)) return true;\n  if (/\\ba\\s+las\\s+\\d{1,2}\\b/.test(s)) return true;\n  return false;\n}\n\nfunction quiereSalirBusquedaContacto(s) {\n  if (/\\bquiero\\s+pedir(\\s+cita)?\\b/i.test(s)) return true;\n  return /\\b(olvidalo|dejalo|paso|paso\\s+de\\s+esto|me\\s+rinde|otra\\s+cosa|cambio\\s+de\\s+tema|cambio\\s+de\\s+idea|ya\\s+no|no\\s+quiero\\s+cancelar|mejor\\s+no\\s+cancelo|quiero\\s+reservar|queria\\s+reservar|quisiera\\s+reservar|queria\\s+una\\s+cita|solo\\s+queria|pedir\\s+cita|hacer\\s+cita|reservar|agendar|cita\\s+nueva|nada\\s+dejalo|cancela\\s+eso\\s+no)\\b/i.test(s);\n}\n\nfunction variantesTelefono(text) {\n  let d = String(text || '').replace(/\\D/g, '');\n  const out = [];\n  const add = (x) => { if (x && !out.includes(x)) out.push(x); };\n  if (d.startsWith('0034')) d = d.slice(4);\n  while (d.startsWith('34') && d.length > 11) d = d.slice(2);\n  if (/^0+[6-9]/.test(d)) d = d.replace(/^0+/, '');\n  if (d.length >= 9) add(d.slice(-9));\n  if (d.length >= 10) add(d.slice(-10));\n  add(d);\n  if (d.length >= 11 && d.startsWith('34')) add(d.slice(2));\n  return out.filter(Boolean);\n}\n\nfunction extraerContacto(text) {\n  const emails = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi) || [];\n  const email = emails.length ? emails[0].toLowerCase().trim() : null;\n  const allDigits = text.replace(/\\D/g, '');\n  const vars = variantesTelefono(allDigits);\n  const telefono = vars.find(t => t.length === 9 && /^[6-9]/.test(t)) || vars.find(t => t.length >= 9) || null;\n  const telefonoVariantes = telefono ? [...new Set(vars.filter(v => v.length >= 8))] : [];\n  return { email, telefono, telefonoVariantes, digitCount: allDigits.length };\n}\n\nif (pend.esperando_confirmacion) {\n  if (!Array.isArray(pend.citas) || !pend.citas.length) {\n    return [{ json: { action: 'abortar_cancelacion', negocio_id: ctx.negocio_id, session_id: ctx.session_id, respuesta_abort_override: 'La confirmación de cancelación ya no es válida. Si quieres anular una cita, di de nuevo que deseas cancelar.' } }];\n  }\n  if (isConfirm(msg)) {\n    return [{ json: { action: 'ejecutar_cancelacion', citas: pend.citas, negocio_id: ctx.negocio_id, session_id: ctx.session_id } }];\n  }\n  if (isDeny(msg)) {\n    return [{ json: { action: 'abortar_cancelacion', negocio_id: ctx.negocio_id, session_id: ctx.session_id } }];\n  }\n  return [{ json: { action: 'repetir_confirmacion', negocio_id: ctx.negocio_id, session_id: ctx.session_id, respuesta_texto: 'Para anular la(s) cita(s) que te indiqué, responde SÍ si confirmas la anulación o NO si quieres conservarla. Si necesitas otra cosa, responde NO y lo vemos.' } }];\n}\n\nif (pend.esperando_contacto) {\n  if (pareceNuevaReservaSinCancelar(msg)) {\n    return [{ json: { action: 'abortar_cancelacion', negocio_id: ctx.negocio_id, session_id: ctx.session_id } }];\n  }\n  if (quiereSalirBusquedaContacto(msg)) {\n    return [{ json: { action: 'abortar_cancelacion', negocio_id: ctx.negocio_id, session_id: ctx.session_id } }];\n  }\n  const { email, telefono, telefonoVariantes, digitCount } = extraerContacto(raw);\n  if (email || telefono) {\n    return [{ json: { action: 'buscar_citas_contacto', negocio_id: ctx.negocio_id, session_id: ctx.session_id, telefono, telefonoVariantes, email } }];\n  }\n  if (digitCount > 0 && digitCount < 9) {\n    return [{ json: { action: 'repetir_contacto', negocio_id: ctx.negocio_id, session_id: ctx.session_id, respuesta_texto: 'El teléfono parece incompleto (en España suelen ser 9 cifras). Revísalo o escribe el email con el que reservaste.' } }];\n  }\n  return [{ json: { action: 'repetir_contacto', negocio_id: ctx.negocio_id, session_id: ctx.session_id, respuesta_texto: 'No he encontrado un teléfono o email claro. Escríbelo como al reservar (ej: 612345678, +34 612 34 56 78 o tu correo).' } }];\n}\n\nreturn [{ json: { action: 'continuar', negocio_id: ctx.negocio_id, session_id: ctx.session_id } }];\n} catch (err) {\n  const wh = $('Webhook Cursor').first().json.body || {};\n  return [{ json: { action: 'continuar', negocio_id: String(wh.negocio_id || ''), session_id: String(wh.session_id || '') } }];\n}\n"
+      },
+      "id": "eval-cancel-confirm-001",
+      "name": "Evaluar Confirmación Cancelación",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2460,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c-exec",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "ejecutar_cancelacion",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-ejecutar-cancel-001",
+      "name": "Ejecutar cancelación?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2760,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c-abort",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "abortar_cancelacion",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-abortar-cancel-001",
+      "name": "Abortar cancelación?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3060,
+        410
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c-buscar-co",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "buscar_citas_contacto",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-buscar-contacto-001",
+      "name": "¿Buscar citas por contacto?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3360,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c-repetir",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "repetir_contacto",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "c-rep-conf",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "repetir_confirmacion",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "if-repetir-contacto-001",
+      "name": "¿Repetir mensaje guiado cancelar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        3660,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ev = $('Evaluar Confirmación Cancelación').first().json;\nconst nid = ev.negocio_id;\nconst parts = [];\nconst tels = Array.isArray(ev.telefonoVariantes) && ev.telefonoVariantes.length ? ev.telefonoVariantes : (ev.telefono ? [ev.telefono] : []);\nfor (const t of tels) {\n  if (!t) continue;\n  parts.push('telefono.eq.' + t);\n  parts.push('cliente_telefono.eq.' + t);\n}\nif (ev.email) parts.push('email.eq.' + ev.email);\nif (!parts.length) {\n  return [{ json: { requestUrl: 'https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/citas?negocio_id=eq.' + nid + '&id=eq.00000000-0000-0000-0000-000000000000&estado=in.(pendiente,confirmada)&limit=1&select=id' } }];\n}\nconst orClause = '(' + parts.join(',') + ')';\nconst url = 'https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/citas?negocio_id=eq.' + nid + '&estado=in.(pendiente,confirmada)&order=fecha_hora.asc&limit=20&select=id,fecha_hora,nombre,apellido,nombre_cliente,telefono,email,servicio&or=' + encodeURIComponent(orClause);\nreturn [{ json: { requestUrl: url } }];"
+      },
+      "id": "construir-url-contacto-001",
+      "name": "Construir URL Citas Contacto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3660,
+        410
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.requestUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 45000
+        }
+      },
+      "id": "buscar-citas-contacto-001",
+      "name": "Buscar Citas por Contacto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        3960,
+        410
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $input.first().json;\nif (j && typeof j === 'object' && !Array.isArray(j) && j.message && j.code != null && !j.id) {\n  return [{ json: { __rows: [], origenBusqueda: 'contacto', errorApi: true } }];\n}\nlet rawRows = [];\nif (Array.isArray(j)) rawRows = j.filter(r => r && r.id);\nelse if (j && j.id && j.fecha_hora) rawRows = [j];\nreturn [{ json: { __rows: rawRows, origenBusqueda: 'contacto', errorApi: false } }];"
+      },
+      "id": "envolver-citas-contacto-001",
+      "name": "Envolver Resultado Contacto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4260,
+        410
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/sesiones?negocio_id=eq.{{ $('Evaluar Confirmación Cancelación').first().json.negocio_id }}&session_id=eq.{{ $('Evaluar Confirmación Cancelación').first().json.session_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"cancelacion_pendiente\":null}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "limpiar-pendiente-exec-001",
+      "name": "Limpiar Pendiente Tras Cancelar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        3360,
+        620
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/sesiones?negocio_id=eq.{{ $('Evaluar Confirmación Cancelación').first().json.negocio_id }}&session_id=eq.{{ $('Evaluar Confirmación Cancelación').first().json.session_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"cancelacion_pendiente\":null}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "limpiar-pendiente-abort-001",
+      "name": "Limpiar Pendiente Abortar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        3360,
+        480
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "const ev = $('Evaluar Confirmación Cancelación').first().json;\nconst respuesta_texto = ev.respuesta_abort_override || 'De acuerdo, no he anulado ninguna cita. ¿En qué más puedo ayudarte?';\nreturn [{ json: { negocio_id: ev.negocio_id, session_id: ev.session_id, respuesta_texto } }];"
+      },
+      "id": "resp-abort-cancel-001",
+      "name": "Respuesta Abortó Cancelación",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3660,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/mensajes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ negocio_id: $('Preparar Contexto').first().json.negocio_id, session_id: $('Preparar Contexto').first().json.session_id, rol: 'user', contenido: $('Preparar Contexto').first().json.mensaje, canal: 'web' }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "ea1f7aaa-30a5-456b-aa41-031dd7213cf8",
+      "name": "Guardar Msg User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2160,
+        480
+      ],
+      "retryOnFail": false,
+      "maxTries": 1,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{TU_API_KEY_OPENROUTER}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'openai/gpt-4o-mini', temperature: 0, max_tokens: 10, messages: [ { role: 'system', content: 'Eres un clasificador de intención. Responde EXCLUSIVAMENTE con UNA sola palabra en mayúsculas, sin puntuación: CANCELAR, RESERVAR o CONVERSAR.\\n\\nPRIORIDAD: Si el MENSAJE ACTUAL (no el historial) solo aporta día y/o hora para concertar cita nueva (ej. \"el martes 12 de mayo a las 22\", \"mañana a las 10\", \"el viernes por la tarde\") y NO pide anular, borrar ni modificar una cita ya existente, responde RESERVAR.\\n\\n- CANCELAR: solo si pide anular/cancelar/eliminar/borrar/dar de baja una cita ya existente, liberar hueco, o dice que no podrá acudir a una cita que ya tiene. No uses CANCELAR si solo elige fecha/hora para una reserva nueva.\\n- RESERVAR: agendar/reservar/pedir cita nueva o completar datos de reserva en curso (fecha, hora, nombre, teléfono, email).\\n- CONVERSAR: saludos, información del negocio u otras consultas sin intención de reservar ni cancelar.' }, { role: 'user', content: 'HISTORIAL:\\n' + $(`Preparar Contexto`).first().json.historialTexto + '\\n\\nMENSAJE ACTUAL: ' + $(`Preparar Contexto`).first().json.mensaje } ] }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "6d9aa2bd-4482-4138-ab1f-6890056d5b87",
+      "name": "Clasificador",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        3960,
+        550
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $input.first().json;\nconst raw = String($('Preparar Contexto').first().json.mensaje || '').trim();\nconst msg = raw.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\nconst prev = $('Preparar Contexto').first().json.estadoPrev || {};\nconst histPc = Array.isArray($('Preparar Contexto').first().json.historial) ? $('Preparar Contexto').first().json.historial : [];\n\nfunction ultimoContenidoAsistente(arr) {\n  for (let i = arr.length - 1; i >= 0; i--) {\n    const m = arr[i];\n    if (!m || !m.contenido) continue;\n    const rol = String(m.rol || '').toLowerCase();\n    if (rol === 'assistant' || rol === 'asistente') return String(m.contenido);\n  }\n  return '';\n}\n\nfunction invitacionAReservarOtra(texto) {\n  const t = String(texto || '').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n  if (!t) return false;\n  if (/\\breservar\\s+otra\\b/.test(t)) return true;\n  if (/\\botra\\s+cita\\b/.test(t)) return true;\n  if (/\\bd[ií]melo\\s+cuando\\s+quieras\\b/.test(t)) return true;\n  if (/\\bcuando\\s+quieras\\b/.test(t) && /\\breserv/.test(t)) return true;\n  if (/he\\s+anulad\\w+/.test(t) && /\\breserv/.test(t)) return true;\n  if (/\\bsi\\s+quieres\\s+reservar\\b/.test(t)) return true;\n  return false;\n}\n\nfunction afirmacionCortaReserva(r) {\n  const x = String(r || '').trim();\n  if (!x || x.length > 28) return false;\n  const n = x.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n  if (/^(si|sip|sii|vale|ok|okay|claro|perfecto|adelante|genial|bueno|vamos|yes)\\b/.test(n)) return true;\n  if (/^(si|ok|vale)[\\s!.?]*$/i.test(x)) return true;\n  return false;\n}\n\nfunction pareceNuevaReservaSinCancelar(s) {\n  if (!s) return false;\n  if (/\\b(cancelar|anular|eliminar|dar\\s+de\\s+baja|no\\s+podre\\s+acudir)\\b/.test(s)) return false;\n  if (/\\b(el\\s+)?(lunes|martes|miercoles|jueves|viernes|sabado|domingo)\\b/.test(s) && /\\d/.test(s)) return true;\n  if (/\\b\\d{1,2}\\s+de\\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\\b/.test(s)) return true;\n  if (/\\b(manana|pasado\\s+manana|hoy)\\b/.test(s) && /\\b(las\\s+)?\\d{1,2}\\b/.test(s)) return true;\n  if (/\\ba\\s+las\\s+\\d{1,2}\\b/.test(s)) return true;\n  return false;\n}\n\nfunction pareceEmailEnTexto(r) {\n  return /[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}/i.test(r);\n}\n\nfunction pareceSoloTelefono(r) {\n  const t = r.trim();\n  if (!t) return false;\n  const d = t.replace(/\\D/g, '');\n  if (d.length < 9 || d.length > 15) return false;\n  return /^[+\\d()[\\]\\s.-]+$/.test(t);\n}\n\nfunction hayCitaEnSesion(p) {\n  return !!(p && p.fecha && String(p.fecha).trim() && p.hora && String(p.hora).trim());\n}\n\nfunction faltaAlgunDatoContacto(p) {\n  if (!hayCitaEnSesion(p)) return false;\n  return !(p.nombre && p.apellido && p.telefono && p.email);\n}\n\nfunction pareceRespuestaNombreApellido(r, s) {\n  if (!r || pareceEmailEnTexto(r) || /\\d/.test(r)) return false;\n  if (/\\b(cancelar|anular|hola|gracias|vale|cuanto|donde|como|cuesta|quiero|necesito|precio|horario|servicios)\\b/.test(s)) return false;\n  const parts = r.trim().split(/\\s+/).filter(Boolean);\n  if (parts.length < 2 || parts.length > 4) return false;\n  const ok = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ'.-]+$/;\n  if (!parts.every(w => ok.test(w))) return false;\n  const stop = new Set(['cuanto','cuesta','donde','como','hola','gracias','vale','si','no','bien','adios','buenas','precio','horario','quiero','necesito','para','cita','reservar']);\n  const w0 = parts[0].toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n  if (stop.has(w0)) return false;\n  return true;\n}\n\nconst ultimoAsis = ultimoContenidoAsistente(histPc);\nlet forzarReserva = pareceNuevaReservaSinCancelar(msg);\nif (!forzarReserva && invitacionAReservarOtra(ultimoAsis) && afirmacionCortaReserva(raw)) forzarReserva = true;\nif (!forzarReserva && faltaAlgunDatoContacto(prev) && !/\\b(cancelar|anular)\\b/.test(msg)) {\n  if (pareceSoloTelefono(raw) || pareceEmailEnTexto(raw)) forzarReserva = true;\n  else if ((!prev.nombre || !prev.apellido) && pareceRespuestaNombreApellido(raw, msg)) forzarReserva = true;\n}\n\nlet txt = (j.choices?.[0]?.message?.content || '').trim();\nif (forzarReserva) txt = 'RESERVAR';\nconst base = j.choices?.[0] || { message: { role: 'assistant', content: '' } };\nconst ch0 = { ...base, message: { ...base.message, content: txt } };\nreturn [{ json: { ...j, choices: [ch0] } }];"
+      },
+      "id": "b8e4f0a1-2c3d-4e5f-9a0b-1c2d3e4f5a6b",
+      "name": "Priorizar Reserva Fecha",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4260,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c-cancel",
+              "leftValue": "={{ (() => { const raw = String($json.choices?.[0]?.message?.content || '').trim().toUpperCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, ''); const m = raw.match(/^(CANCELAR|RESERVAR|CONVERSAR)\\b/); return m ? m[1] === 'CANCELAR' : false; })() }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cancel-if-001",
+      "name": "Es Cancelar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4560,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/citas?negocio_id=eq.{{ $('Preparar Contexto').first().json.negocio_id }}&session_id=eq.{{ $('Preparar Contexto').first().json.session_id }}&estado=in.(pendiente,confirmada)&order=fecha_hora.asc&limit=20&select=id,fecha_hora,nombre,apellido,nombre_cliente,telefono,email,servicio",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 45000
+        }
+      },
+      "id": "cancel-find-001",
+      "name": "Buscar Citas Activas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        4860,
+        410
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all() || [];\nconst ctx = $('Preparar Contexto').first().json;\nlet rawRows = [];\nlet origenBusqueda = 'sesion';\nlet errorApiWrapped = false;\n\nfor (const it of items) {\n  const j = it?.json;\n  if (!j) continue;\n  if (j.origenBusqueda === 'contacto') {\n    rawRows = Array.isArray(j.__rows) ? j.__rows.filter(r => r && r.id) : [];\n    origenBusqueda = 'contacto';\n    errorApiWrapped = !!j.errorApi;\n    break;\n  }\n  if (Array.isArray(j)) {\n    rawRows = j.filter(r => r && r.id);\n    break;\n  }\n  if (j.id && j.fecha_hora) {\n    rawRows = [j];\n    break;\n  }\n  if (j.message && j.code != null && !j.id && !Array.isArray(j)) {\n    return [{ json: { negocio_id: ctx.negocio_id, session_id: ctx.session_id, encontrada: false, origenBusqueda: 'sesion', flujo_sin_citas: 'error_api', respuesta_texto: 'No pude consultar tus citas ahora mismo (fallo temporal). Prueba otra vez en unos segundos o di de nuevo que quieres cancelar.', cancelacion_pendiente_payload: null } }];\n  }\n}\n\nif (errorApiWrapped && origenBusqueda === 'contacto') {\n  return [{ json: { negocio_id: ctx.negocio_id, session_id: ctx.session_id, encontrada: false, origenBusqueda: 'contacto', flujo_sin_citas: 'error_api', respuesta_texto: 'No pude completar la búsqueda por teléfono o email. Inténtalo otra vez en un momento.', cancelacion_pendiente_payload: { esperando_contacto: true } } }];\n}\n\nconst seen = new Set();\nrawRows = rawRows.filter(r => {\n  if (!r || !r.id) return false;\n  if (seen.has(r.id)) return false;\n  seen.add(r.id);\n  return true;\n});\nrawRows.sort((a, b) => String(a.fecha_hora || '').localeCompare(String(b.fecha_hora || '')));\n\nif (!rawRows.length) {\n  let flujo_sin_citas = null;\n  let respuesta_texto = '';\n  let cancelacion_pendiente_payload = null;\n  if (origenBusqueda === 'sesion') {\n    flujo_sin_citas = 'pedir_contacto';\n    cancelacion_pendiente_payload = { esperando_contacto: true };\n    respuesta_texto = 'No veo ninguna cita enlazada a esta conversación (por ejemplo si reservaste en otro dispositivo o ventana). Para localizarla, escribe el mismo teléfono o email que usaste al reservar.';\n  } else {\n    flujo_sin_citas = 'contacto_sin_resultado';\n    respuesta_texto = 'No encuentro ninguna cita activa con ese teléfono o email en este negocio. Revisa el dato o indica otro con el que hayas reservado.';\n  }\n  return [{ json: { negocio_id: ctx.negocio_id, session_id: ctx.session_id, encontrada: false, origenBusqueda, flujo_sin_citas, respuesta_texto, cancelacion_pendiente_payload } }];\n}\nconst citas = rawRows.map(c => ({\n  id: c.id,\n  fecha_hora: c.fecha_hora,\n  nombre: c.nombre || (c.nombre_cliente || '').split(' ')[0] || '',\n  servicio: c.servicio || '',\n}));\nconst lines = citas.map((c, i) => {\n  const fechaTxt = c.fecha_hora ? new Date(c.fecha_hora).toLocaleString('es-ES', { weekday: 'long', day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }) : '';\n  const svc = c.servicio ? ' · ' + c.servicio : '';\n  return (i + 1) + ') ' + fechaTxt + svc;\n});\nconst intro = citas.length === 1 ? 'Tienes esta reserva activa:' : 'Tienes estas reservas activas:';\nconst cuerpo = intro + '\\n' + lines.join('\\n') + '\\n\\n¿Confirmas que quieres anular ' + (citas.length === 1 ? 'esta cita' : 'estas citas') + '? Responde SÍ para confirmar la anulación o NO para conservarla.';\nconst cancelacion_pendiente_payload = { esperando_confirmacion: true, citas: citas.map(c => ({ id: c.id, fecha_hora: c.fecha_hora })) };\nreturn [{ json: { negocio_id: ctx.negocio_id, session_id: ctx.session_id, encontrada: true, origenBusqueda, flujo_sin_citas: null, respuesta_texto: cuerpo, cancelacion_pendiente_payload } }];"
+      },
+      "id": "cancel-decide-001",
+      "name": "Preparar Lista Cancelación",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5160,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c-encontrada",
+              "leftValue": "={{ $json.encontrada }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cancel-if-002",
+      "name": "Existe Cita?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        5460,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c-pedir-co",
+              "leftValue": "={{ $json.flujo_sin_citas }}",
+              "rightValue": "pedir_contacto",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-pedir-contacto-cancel-001",
+      "name": "¿Pedir contacto para cancelar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        5760,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c-err-api",
+              "leftValue": "={{ $json.flujo_sin_citas }}",
+              "rightValue": "error_api",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-error-api-cancel-001",
+      "name": "¿Error API búsqueda citas?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        6060,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c-contacto-fail",
+              "leftValue": "={{ $json.flujo_sin_citas }}",
+              "rightValue": "contacto_sin_resultado",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-contacto-sin-match-001",
+      "name": "¿Sin cita por contacto?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        6360,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/sesiones?on_conflict=negocio_id,session_id",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ negocio_id: $('Preparar Lista Cancelación').first().json.negocio_id, session_id: $('Preparar Lista Cancelación').first().json.session_id, datos_cita: $('Preparar Contexto').first().json.estadoPrev || {}, cancelacion_pendiente: $('Preparar Lista Cancelación').first().json.cancelacion_pendiente_payload }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "guardar-esperando-contacto-001",
+      "name": "Guardar Esperando Contacto Cancelar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        6060,
+        410
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "const x = $('Preparar Lista Cancelación').first().json;\nreturn [{ json: { negocio_id: x.negocio_id, session_id: x.session_id, respuesta_texto: x.respuesta_texto } }];"
+      },
+      "id": "resp-msg-lista-cancel-001",
+      "name": "Respuesta Texto Lista Cancelación",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6960,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/sesiones?negocio_id=eq.{{ $('Preparar Lista Cancelación').first().json.negocio_id }}&session_id=eq.{{ $('Preparar Lista Cancelación').first().json.session_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"cancelacion_pendiente\":null}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "limpiar-pendiente-tras-fallo-contacto-001",
+      "name": "Limpiar Pendiente Tras Fallo Contacto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        6660,
+        480
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/sesiones?on_conflict=negocio_id,session_id",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ negocio_id: $('Preparar Lista Cancelación').first().json.negocio_id, session_id: $('Preparar Lista Cancelación').first().json.session_id, datos_cita: $('Preparar Contexto').first().json.estadoPrev || {}, cancelacion_pendiente: $('Preparar Lista Cancelación').first().json.cancelacion_pendiente_payload }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "guardar-pendiente-cancel-001",
+      "name": "Guardar Pendiente Cancelación",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        5760,
+        620
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "const x = $('Preparar Lista Cancelación').first().json;\nreturn [{ json: { negocio_id: x.negocio_id, session_id: x.session_id, respuesta_texto: x.respuesta_texto } }];"
+      },
+      "id": "resp-pedir-conf-cancel-001",
+      "name": "Respuesta Pedir Confirmación",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6060,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/citas?id=in.(' + $json.citas.map(c => c.id).join(',') + ')' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ estado: 'cancelada' }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "cancel-update-001",
+      "name": "Cancelar Citas Confirmadas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        3060,
+        550
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const ev = $('Evaluar Confirmación Cancelación').first().json;\nconst citas = ev.citas || [];\nconst partes = citas.map(c => c.fecha_hora ? new Date(c.fecha_hora).toLocaleString('es-ES', { weekday: 'long', day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' }) : '').filter(Boolean);\nconst textoFechas = partes.length === 1 ? ' del ' + partes[0] : ' (' + partes.join('; ') + ')';\nconst respuesta_texto = '✅ He anulado ' + (citas.length === 1 ? 'tu cita' : 'tus ' + citas.length + ' citas') + textoFechas + '. Si quieres reservar otra, dímelo cuando quieras.';\nreturn [{ json: { negocio_id: ev.negocio_id, session_id: ev.session_id, respuesta_texto } }];"
+      },
+      "id": "cancel-resp-ok",
+      "name": "Respuesta Cancelar OK",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3660,
+        690
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Preparar Lista Cancelación').first().json;\nconst respuesta_texto = 'No he podido completar la búsqueda de la cita. Prueba de nuevo indicando cancelar y, si hace falta, el teléfono o email con el que reservaste.';\nreturn [{ json: { negocio_id: ctx.negocio_id, session_id: ctx.session_id, respuesta_texto } }];"
+      },
+      "id": "cancel-resp-no",
+      "name": "Respuesta Cancelar Sin Cita",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6660,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ ($json.choices[0].message.content || '').trim().toUpperCase() }}",
+              "rightValue": "RESERVAR",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b717553a-33f7-4474-9675-725561207d2e",
+      "name": "Es Reserva?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        4860,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{TU_API_KEY_OPENROUTER}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: 'openai/gpt-4o-mini',\n  temperature: 0,\n  response_format: { type: 'json_object' },\n  messages: [\n    {\n      role: 'system',\n      content: `Eres un extractor de datos de cita. Extrae SOLO los datos NUEVOS que el cliente menciona en el MENSAJE ACTUAL (o en el historial si no había estado previo). Año actual: ${$(`Preparar Contexto`).first().json.yearActual}. Hoy es ${$(`Preparar Contexto`).first().json.hoy}.\\n\\nCAMPOS:\\n- fecha (YYYY-MM-DD)\\n- hora (HH:MM, '15' o 'las 15' = '15:00')\\n- nombre (nombre de pila del cliente)\\n- apellido\\n- telefono (sólo dígitos, espacios o +)\\n- email\\n- servicio\\n\\nNOMBRE Y APELLIDO en una sola línea: si el MENSAJE ACTUAL no trae números ni @ y son solo 2 palabras con letras (ej. Paco torres), primera=nombre y segunda=apellido; con 3 palabras (ej. Ana María García), las dos primeras = nombre compuesto y la tercera = apellido; capitaliza como nombre propio. Si el asistente acaba de pedir nombre y apellido, aplica esto al texto del cliente.\\n\\nRegla: si un dato NO aparece, devuelve \"\". No inventes. Responde SOLO JSON: {\"fecha\":\"\",\"hora\":\"\",\"nombre\":\"\",\"apellido\":\"\",\"telefono\":\"\",\"email\":\"\",\"servicio\":\"\"}.\\n\\nCRÍTICO: El nombre del asistente en el historial (p. ej. \\\"Soy Marc\\\") NO es el del cliente; no uses nombre ni apellido del asistente. No inventes nombre ni apellido. Si el MENSAJE ACTUAL solo elige servicio (número, opción de lista o nombre del servicio que apareció en el historial) sin datos personales nuevos, rellena servicio y deja nombre y apellido vacíos (\\\"\\\") salvo que el mensaje los incluya explícito.\\n\\nEstado previo conocido (no lo repitas si no es necesario): ${JSON.stringify($(`Preparar Contexto`).first().json.estadoPrev || {})}`\n    },\n    {\n      role: 'user',\n      content: 'HISTORIAL PREVIO:\\n' + ($(`Preparar Contexto`).first().json.historialTexto || '(sin historial)') + '\\n\\nMENSAJE ACTUAL: ' + $(`Preparar Contexto`).first().json.mensaje\n    }\n  ]\n}) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "2da4c0af-93ff-4783-a7e8-9c342980cd12",
+      "name": "Extraer Datos Cita",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        5160,
+        340
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Preparar Contexto').first().json;\nconst prev = ctx.estadoPrev || {};\nlet raw = {};\ntry {\n  raw = JSON.parse($json.choices[0].message.content);\n} catch (e) {\n  raw = {};\n}\n\n// Merge: datos previos + datos nuevos (los nuevos sobreescriben si llegan)\nfunction pick(a, b) { return (b && String(b).trim()) ? String(b).trim() : (a || ''); }\n\nconst fecha = pick(prev.fecha, raw.fecha);\nlet hora = pick(prev.hora, raw.hora);\nif (hora && hora.length === 5) hora = hora + ':00';\n\n// Calcula offset Madrid (CET/CEST) y construye fecha en ISO UTC para evitar problemas de URL encoding del '+' en n8n\nfunction madridOffsetMin(dateStr) {\n  if (!dateStr) return 60;\n  const probe = new Date(dateStr + 'T12:00:00Z');\n  const mad = new Date(probe.toLocaleString('en-US', { timeZone: 'Europe/Madrid' }));\n  const utc = new Date(probe.toLocaleString('en-US', { timeZone: 'UTC' }));\n  return Math.round((mad - utc) / 60000);\n}\nlet fecha_hora = null;\nif (fecha && hora) {\n  const offMin = madridOffsetMin(fecha);\n  // El usuario dice hora Madrid; restamos el offset para pasar a UTC\n  const local = new Date(`${fecha}T${hora}Z`);\n  const utc = new Date(local.getTime() - offMin * 60000);\n  fecha_hora = utc.toISOString().replace(/\\.\\d{3}Z$/, 'Z');\n}\n\nconst msgUser = String(ctx.mensaje || '').trim();\nconst msgNorm = msgUser.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');\n\nfunction pareceSoloEleccionServicio(s) {\n  const t = String(s || '').trim();\n  if (!t) return false;\n  if (/^\\d{1,2}$/.test(t)) return true;\n  if (/^(la\\s+)?(opcion|opción)\\s*\\d{1,2}\\.?$/i.test(t)) return true;\n  if (/^n[uú]mero\\s*\\d{1,2}$/i.test(t)) return true;\n  if (/^la\\s+\\d{1,2}$/i.test(t)) return true;\n  if (/^(quiero|dame|elijo|me\\s+quedo\\s+con)\\s+(la\\s+)?(opcion|opción)?\\s*\\d{1,2}\\.?$/i.test(t)) return true;\n  if (/^(la\\s+)?(opcion|opción)\\s*\\d{1,2}\\s+(por\\s+favor)?$/i.test(t)) return true;\n  return false;\n}\n\nfunction usuarioNiegaHaberDichoNombre(norm) {\n  if (!norm) return false;\n  return /no\\s+(le\\s+)?he\\s+dicho\\s+mi\\s+nombre|no\\s+he\\s+dicho\\s+(mi\\s+)?nombre|no\\s+te\\s+he\\s+dicho|aun\\s+no\\s+(te\\s+)?he\\s+dicho|todavia\\s+no\\s+he\\s+dicho|sin\\s+darme\\s+nombre|no\\s+te\\s+dije\\s+mi\\s+nombre/i.test(norm);\n}\n\nlet nombre = pick(prev.nombre, raw.nombre);\nlet apellido = pick(prev.apellido, raw.apellido);\nif (pareceSoloEleccionServicio(msgUser)) {\n  nombre = (raw.nombre && String(raw.nombre).trim()) ? String(raw.nombre).trim() : '';\n  apellido = (raw.apellido && String(raw.apellido).trim()) ? String(raw.apellido).trim() : '';\n}\nif (usuarioNiegaHaberDichoNombre(msgNorm)) {\n  nombre = (raw.nombre && String(raw.nombre).trim()) ? String(raw.nombre).trim() : '';\n  apellido = (raw.apellido && String(raw.apellido).trim()) ? String(raw.apellido).trim() : '';\n}\nif (!apellido && nombre && !/\\d/.test(String(nombre))) {\n  const parts = String(nombre).trim().split(/\\s+/).filter(Boolean);\n  if (parts.length === 2) {\n    const wRe = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ'.-]+$/i;\n    if (wRe.test(parts[0]) && wRe.test(parts[1])) {\n      nombre = parts[0];\n      apellido = parts[1];\n    }\n  }\n}\nconst telefono = pick(prev.telefono, raw.telefono);\nconst email = pick(prev.email, raw.email);\nconst servicio = pick(prev.servicio, raw.servicio);\n\nconst tieneFechaHora = !!(fecha && hora);\nconst tieneNombre = !!nombre;\nconst tieneApellido = !!apellido;\nconst tieneTelefono = !!telefono;\nconst tieneEmail = !!email;\nconst tieneContacto = tieneNombre && tieneApellido && tieneTelefono && tieneEmail;\n\nreturn [{\n  json: {\n    negocio_id: ctx.negocio_id,\n    session_id: ctx.session_id,\n    fecha,\n    hora,\n    fecha_hora,\n    nombre,\n    apellido,\n    nombre_completo: [nombre, apellido].filter(Boolean).join(' '),\n    telefono,\n    email,\n    servicio,\n    tieneFechaHora,\n    tieneNombre,\n    tieneApellido,\n    tieneTelefono,\n    tieneEmail,\n    tieneContacto,\n    camposCompletos: tieneFechaHora && tieneContacto,\n    datos_cita_merged: { fecha, hora, nombre, apellido, telefono, email, servicio }\n  }\n}];"
+      },
+      "id": "fb36ae56-b5a7-4bbf-bff4-38cd2af953a0",
+      "name": "Procesar Datos Cita",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5460,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/sesiones?on_conflict=negocio_id,session_id",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ negocio_id: $json.negocio_id, session_id: $json.session_id, datos_cita: $json.datos_cita_merged }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "ff11ee22-aaaa-bbbb-cccc-dddddddddddd",
+      "name": "Guardar Estado Cita",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        5760,
+        480
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c3",
+              "leftValue": "={{ $('Procesar Datos Cita').first().json.tieneFechaHora }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "55f0c2d3-dc7f-46f8-bf5e-6daad2dceb50",
+      "name": "Tiene Fecha y Hora?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        6060,
+        690
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $('Procesar Datos Cita').first().json;\nlet msg;\nif (!d.fecha && !d.hora) {\n  msg = '¿Para qué día y a qué hora te gustaría la cita?';\n} else if (!d.fecha) {\n  msg = '¿Para qué día quieres la cita?';\n} else {\n  msg = `Perfecto, apunto el ${d.fecha}. ¿A qué hora te viene mejor?`;\n}\nreturn [{ json: { negocio_id: d.negocio_id, session_id: d.session_id, respuesta_texto: msg } }];"
+      },
+      "id": "cc6e209c-d110-4598-93d0-ce88b01fc40a",
+      "name": "Respuesta Datos Incompletos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6360,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/citas?negocio_id=eq.{{ $('Procesar Datos Cita').first().json.negocio_id }}&fecha_hora=eq.{{ $('Procesar Datos Cita').first().json.fecha_hora }}&estado=neq.cancelada&select=id",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 45000
+        }
+      },
+      "id": "04f4b35f-a374-4d1a-a0b1-5be916655bfb",
+      "name": "Verificar Agenda",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        6360,
+        620
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first()?.json;\n\nlet arr;\nif (Array.isArray(raw)) {\n  arr = raw;\n} else if (raw && Array.isArray(raw.data)) {\n  arr = raw.data;\n} else if (raw && raw.id) {\n  arr = [raw];\n} else {\n  arr = [];\n}\n\nconst datos = $('Procesar Datos Cita').first().json;\nconst neg = $('Preparar Contexto').first().json.negocio || {};\nconst duracionMin = 30;\n\nfunction toMin(h, m) { return h * 60 + m; }\n\nfunction parteHoraMadrid(iso) {\n  if (!iso) return null;\n  const d = new Date(iso);\n  const f = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false });\n  const parts = f.formatToParts(d);\n  const hh = +parts.find(p => p.type === 'hour').value;\n  const mm = +parts.find(p => p.type === 'minute').value;\n  return { hh, mm, min: toMin(hh, mm) };\n}\n\nfunction parseHHMM(s) {\n  if (!s || typeof s !== 'string') return null;\n  const m = String(s).trim().match(/^(\\d{1,2}):(\\d{2})/);\n  if (!m) return null;\n  const h = +m[1], mi = +m[2];\n  if (h > 23 || mi > 59) return null;\n  return { h, m: mi, min: toMin(h, mi) };\n}\n\nfunction parseRangoDesdeHorarioText(text) {\n  if (!text || typeof text !== 'string') return null;\n  const t = text.replace(/\\u00a0/g, ' ');\n  const m = t.match(/(\\d{1,2}):(\\d{2})\\D+(\\d{1,2}):(\\d{2})/);\n  if (!m) return null;\n  const h1 = +m[1], mi1 = +m[2], h2 = +m[3], mi2 = +m[4];\n  if (h1 > 23 || mi1 > 59 || h2 > 23 || mi2 > 59) return null;\n  return { h1, m1: mi1, h2, m2: mi2, abre: toMin(h1, mi1), cierra: toMin(h2, mi2) };\n}\n\nlet rango = null;\nconst sAp = parseHHMM(neg.hora_apertura);\nconst sCi = parseHHMM(neg.hora_cierre);\nif (sAp && sCi && sCi.min > sAp.min) {\n  rango = { h1: sAp.h, m1: sAp.m, h2: sCi.h, m2: sCi.m, abre: sAp.min, cierra: sCi.min };\n}\nif (!rango) rango = parseRangoDesdeHorarioText(neg.horario || '');\n\nlet fuera_de_horario = false;\nlet franja_horario_txt = '';\nif (rango && datos.fecha_hora) {\n  franja_horario_txt = `${String(rango.h1).padStart(2, '0')}:${String(rango.m1).padStart(2, '0')}–${String(rango.h2).padStart(2, '0')}:${String(rango.m2).padStart(2, '0')}`;\n  const slot = parteHoraMadrid(datos.fecha_hora);\n  if (slot) {\n    const finSlot = slot.min + duracionMin;\n    if (slot.min < rango.abre || finSlot > rango.cierra) fuera_de_horario = true;\n  }\n}\n\nconst sinConflictoAgenda = arr.length === 0;\nconst libre = sinConflictoAgenda && !fuera_de_horario;\n\nreturn [{\n  json: {\n    ...datos,\n    ocupadas: arr.length,\n    libre,\n    fuera_de_horario,\n    franja_horario_txt,\n    sinConflictoAgenda\n  }\n}];"
+      },
+      "id": "30b3abba-f2b0-49eb-9cb0-b5dd1dca4a8d",
+      "name": "Disponibilidad",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6660,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c2",
+              "leftValue": "={{ $json.libre }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d79fc439-4aa2-42bf-baf4-02ba10ce94fd",
+      "name": "Es Disponible?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        6960,
+        410
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c_contacto",
+              "leftValue": "={{ $json.tieneContacto }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b1c2d3e4-f5a6-7890-bcde-f12345678901",
+      "name": "Tiene Contacto?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        7260,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json;\nlet msg;\nif (!d.tieneNombre) {\n  msg = '¡Ese horario está libre! Para confirmar la cita, ¿me dices tu nombre?';\n} else if (!d.tieneApellido) {\n  msg = `Gracias, ${d.nombre}. ¿Y tu apellido?`;\n} else if (!d.tieneTelefono) {\n  msg = '¿Me pasas tu número de teléfono para confirmar?';\n} else if (!d.tieneEmail) {\n  msg = 'Por último, ¿cuál es tu email? Te enviaré la confirmación y un recordatorio.';\n} else {\n  msg = '¿Me confirmas tus datos para reservar?';\n}\nreturn [{ json: { negocio_id: d.negocio_id, session_id: d.session_id, respuesta_texto: msg } }];"
+      },
+      "id": "c2d3e4f5-a6b7-8901-cdef-234567890123",
+      "name": "Pedir Contacto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7560,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/citas",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  negocio_id: $json.negocio_id,\n  session_id: $json.session_id,\n  fecha_hora: $json.fecha_hora,\n  nombre: $json.nombre || null,\n  apellido: $json.apellido || null,\n  nombre_cliente: $json.nombre_completo || $json.nombre || 'Cliente web',\n  telefono: $json.telefono || null,\n  cliente_telefono: $json.telefono || null,\n  email: $json.email || null,\n  servicio: $json.servicio || null,\n  estado: 'pendiente',\n  duracion_min: 30\n}) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "b47e15f9-53c1-4e5f-acfb-26ef796d019d",
+      "name": "Insertar Cita",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        7560,
+        410
+      ],
+      "retryOnFail": false,
+      "maxTries": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/sesiones?on_conflict=negocio_id,session_id",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const d = $('Procesar Datos Cita').first().json; const dc = {}; const n = String(d.nombre || '').trim(); const a = String(d.apellido || '').trim(); const t = String(d.telefono || '').trim(); const e = String(d.email || '').trim(); const s = String(d.servicio || '').trim(); if (n) dc.nombre = n; if (a) dc.apellido = a; if (t) dc.telefono = t; if (e) dc.email = e; if (s) dc.servicio = s; return JSON.stringify({ negocio_id: d.negocio_id, session_id: d.session_id, datos_cita: dc }); })() }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "11223344-aabb-ccdd-eeff-001122334455",
+      "name": "Limpiar Estado Cita",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        7860,
+        480
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $('Disponibilidad').first().json;\nconst fechaTxt = new Date(d.fecha_hora).toLocaleString('es-ES', {\n  weekday: 'long', day: '2-digit', month: 'long',\n  hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid'\n});\nconst nombre = d.nombre || '';\nconst servicio = d.servicio ? ` para ${d.servicio}` : '';\nconst extra = [];\nif (d.email) extra.push(`Te he enviado la confirmación a ${d.email} y te recordaré la cita por email.`);\nif (d.telefono) extra.push(`Si necesitas cambiar algo te llamaremos al ${d.telefono}.`);\nconst respuesta_texto = `✅ ¡Perfecto${nombre ? ', ' + nombre : ''}! Tu cita${servicio} queda confirmada para el ${fechaTxt}. ${extra.join(' ')} ¡Te esperamos!`;\nreturn [{ json: {\n  negocio_id: d.negocio_id,\n  session_id: d.session_id,\n  respuesta_texto\n} }];"
+      },
+      "id": "9745fefa-ad2f-4bc2-9fc3-942268866809",
+      "name": "Respuesta Reserva OK",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8160,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $('Disponibilidad').first().json;\nconst fechaTxt = new Date(d.fecha_hora).toLocaleString('es-ES', {\n  weekday: 'long', day: '2-digit', month: 'long',\n  hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid'\n});\nlet respuesta_texto;\nif (d.fuera_de_horario) {\n  const franja = d.franja_horario_txt ? ` (abrimos de ${d.franja_horario_txt.replace('–', ' a ')})` : '';\n  respuesta_texto = `Lo siento, ese horario queda fuera de nuestro horario de atención${franja}. ¿Te viene bien otra hora ese mismo día o en otro momento?`;\n} else {\n  respuesta_texto = `Lo siento, el ${fechaTxt} ya está ocupado. ¿Te viene bien otra hora ese mismo día u otro día cercano?`;\n}\nreturn [{ json: {\n  negocio_id: d.negocio_id,\n  session_id: d.session_id,\n  respuesta_texto\n} }];"
+      },
+      "id": "10aa21cb-d7b9-4f64-a941-52687bf3394f",
+      "name": "Respuesta Reserva NO",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7260,
+        410
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{TU_API_KEY_OPENROUTER}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'openai/gpt-4o-mini', temperature: 0.6, max_tokens: 500, messages: $('Preparar Contexto').first().json.messages }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "cacfb924-c0f8-4e9e-ae44-732e1bc58127",
+      "name": "IA Conversacional",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        5160,
+        480
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Preparar Contexto').first().json;\nconst txt = $json?.choices?.[0]?.message?.content || 'Lo siento, no he podido procesar tu mensaje. ¿Lo repites?';\nreturn [{ json: { negocio_id: ctx.negocio_id, session_id: ctx.session_id, respuesta_texto: txt } }];"
+      },
+      "id": "20f6fec9-b2b3-4c85-bc3a-8a793bae546b",
+      "name": "Respuesta Conversar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5460,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ respuesta: (($json.respuesta_texto != null && String($json.respuesta_texto).trim() !== '') ? String($json.respuesta_texto).trim() : 'Disculpa, ha ocurrido un inconveniente técnico. Por favor, repite tu mensaje en unos segundos. Si continúa, contacta con el negocio.') }) }}",
+        "options": {}
+      },
+      "id": "ac748e59-bdba-4efd-9241-af6fb7b2988b",
+      "name": "Responder a Cursor",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        8460,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dovoggkeoguqtscmsjna.supabase.co/rest/v1/mensajes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvdm9nZ2tlb2d1cXRzY21zam5hIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODI0NzY2OSwiZXhwIjoyMDkzODIzNjY5fQ.qC6lPkeM0jQLMPxSm-lezNtxj34LuSKgWMbo_mk3uGM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ negocio_id: $json.negocio_id, session_id: $json.session_id, rol: 'assistant', contenido: $json.respuesta_texto, canal: 'web' }) }}",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "7baad957-5f21-446a-8026-ae3ef7798589",
+      "name": "Guardar Msg IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        9060,
+        550
+      ],
+      "retryOnFail": false,
+      "maxTries": 1,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c-no-persist",
+              "leftValue": "={{ $json.entrada_ok }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-guardar-resp-ia-001",
+      "name": "¿Guardar respuesta IA?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        8760,
+        480
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "noop-fin-sin-persist-001",
+      "name": "Fin sin persistir",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        9060,
+        410
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const neg = $('Datos Negocio').first().json;\nconst negocio = Array.isArray(neg) ? (neg[0] || {}) : (neg || {});\nconst d = $('Disponibilidad').first().json;\nlet ins = $('Insertar Cita').first().json;\nif (Array.isArray(ins)) ins = ins[0] || {};\nconst to = String(d.email || ins.email || '').trim();\nconst skip = !to;\nconst nombreCliente = [d.nombre, d.apellido].filter(Boolean).join(' ').trim() || String(ins.nombre_cliente || 'Cliente').trim();\nconst fechaTxt = new Date(d.fecha_hora).toLocaleString('es-ES', {\n  weekday: 'long', day: '2-digit', month: 'long',\n  hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid'\n});\nconst marca = String(negocio.nombre || 'Tu reserva').trim();\nconst resend_from_marca = marca.replace(/[<>\"']/g, '').trim() || 'Reserva';\nconst RESEND_FROM_ADDRESS = 'citas@vive-con-ia.com'; // Remitente técnico: dominio verificado en Resend (vive-con-ia.com). El nombre visible es la marca del negocio.\nconst resend_from_full = resend_from_marca + ' <' + RESEND_FROM_ADDRESS + '>';\nconst servicio = String(d.servicio || ins.servicio || '').trim();\nconst subject = 'Confirmación de cita — ' + marca;\nfunction escapeHtml(s) {\n  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');\n}\nconst html = '<p>Hola ' + escapeHtml(nombreCliente) + ',</p>' +\n  '<p>Tu cita en <strong>' + escapeHtml(marca) + '</strong>' +\n  (servicio ? ' para <strong>' + escapeHtml(servicio) + '</strong>' : '') +\n  ' queda confirmada para el <strong>' + escapeHtml(fechaTxt) + '</strong> (hora España).</p>' +\n  (d.telefono ? '<p>Teléfono indicado: ' + escapeHtml(String(d.telefono)) + '</p>' : '') +\n  '<p>Si necesitas cambiar o anular la cita, usa el mismo chat o contacta con el negocio.</p>' +\n  '<p>Saludos,<br/>' + escapeHtml(marca) + '</p>';\nreturn [{ json: {\n  _skip_resend: skip,\n  resend_to: to,\n  resend_subject: subject,\n  resend_html: html,\n  resend_from_full: resend_from_full,\n  negocio_id: d.negocio_id,\n  session_id: d.session_id,\n  cita_id: ins.id || null\n}}];"
+      },
+      "id": "preparar-resend-confirm-001",
+      "name": "Preparar Email Confirmación",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7920,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c-send-mail",
+              "leftValue": "={{ $json._skip_resend }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-resend-confirm-001",
+      "name": "¿Enviar email confirmación?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        7980,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.RESEND_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: $json.resend_from_full, to: [ $json.resend_to ], subject: $json.resend_subject, html: $json.resend_html }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "resend-confirm-cita-001",
+      "name": "Resend Confirmación Cita",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        8100,
+        400
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "alwaysOutputData": true,
+      "continueOnFail": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Cursor": {
+      "main": [
+        [
+          {
+            "node": "Validar Entrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Datos Negocio": {
+      "main": [
+        [
+          {
+            "node": "Cargar Historial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargar Historial": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Historial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Historial": {
+      "main": [
+        [
+          {
+            "node": "Cargar Estado Cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargar Estado Cita": {
+      "main": [
+        [
+          {
+            "node": "Preparar Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Contexto": {
+      "main": [
+        [
+          {
+            "node": "Guardar Msg User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Msg User": {
+      "main": [
+        [
+          {
+            "node": "Evaluar Confirmación Cancelación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluar Confirmación Cancelación": {
+      "main": [
+        [
+          {
+            "node": "Ejecutar cancelación?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ejecutar cancelación?": {
+      "main": [
+        [
+          {
+            "node": "Cancelar Citas Confirmadas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Abortar cancelación?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abortar cancelación?": {
+      "main": [
+        [
+          {
+            "node": "Limpiar Pendiente Abortar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Buscar citas por contacto?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpiar Pendiente Tras Cancelar": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Cancelar OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpiar Pendiente Abortar": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Abortó Cancelación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta Abortó Cancelación": {
+      "main": [
+        [
+          {
+            "node": "Responder a Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Buscar citas por contacto?": {
+      "main": [
+        [
+          {
+            "node": "Construir URL Citas Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Repetir mensaje guiado cancelar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construir URL Citas Contacto": {
+      "main": [
+        [
+          {
+            "node": "Buscar Citas por Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Citas por Contacto": {
+      "main": [
+        [
+          {
+            "node": "Envolver Resultado Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envolver Resultado Contacto": {
+      "main": [
+        [
+          {
+            "node": "Preparar Lista Cancelación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Repetir mensaje guiado cancelar?": {
+      "main": [
+        [
+          {
+            "node": "Responder a Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Clasificador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificador": {
+      "main": [
+        [
+          {
+            "node": "Priorizar Reserva Fecha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Es Cancelar?": {
+      "main": [
+        [
+          {
+            "node": "Buscar Citas Activas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Es Reserva?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Citas Activas": {
+      "main": [
+        [
+          {
+            "node": "Preparar Lista Cancelación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Lista Cancelación": {
+      "main": [
+        [
+          {
+            "node": "Existe Cita?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Existe Cita?": {
+      "main": [
+        [
+          {
+            "node": "Guardar Pendiente Cancelación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Pedir contacto para cancelar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Pedir contacto para cancelar?": {
+      "main": [
+        [
+          {
+            "node": "Guardar Esperando Contacto Cancelar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Error API búsqueda citas?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Error API búsqueda citas?": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Texto Lista Cancelación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Sin cita por contacto?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Sin cita por contacto?": {
+      "main": [
+        [
+          {
+            "node": "Limpiar Pendiente Tras Fallo Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta Cancelar Sin Cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Esperando Contacto Cancelar": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Texto Lista Cancelación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpiar Pendiente Tras Fallo Contacto": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Texto Lista Cancelación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta Texto Lista Cancelación": {
+      "main": [
+        [
+          {
+            "node": "Responder a Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Pendiente Cancelación": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Pedir Confirmación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta Pedir Confirmación": {
+      "main": [
+        [
+          {
+            "node": "Responder a Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancelar Citas Confirmadas": {
+      "main": [
+        [
+          {
+            "node": "Limpiar Pendiente Tras Cancelar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta Cancelar OK": {
+      "main": [
+        [
+          {
+            "node": "Responder a Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta Cancelar Sin Cita": {
+      "main": [
+        [
+          {
+            "node": "Responder a Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Es Reserva?": {
+      "main": [
+        [
+          {
+            "node": "Extraer Datos Cita",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IA Conversacional",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Datos Cita": {
+      "main": [
+        [
+          {
+            "node": "Procesar Datos Cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesar Datos Cita": {
+      "main": [
+        [
+          {
+            "node": "Guardar Estado Cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Estado Cita": {
+      "main": [
+        [
+          {
+            "node": "Tiene Fecha y Hora?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene Fecha y Hora?": {
+      "main": [
+        [
+          {
+            "node": "Verificar Agenda",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta Datos Incompletos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Agenda": {
+      "main": [
+        [
+          {
+            "node": "Disponibilidad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disponibilidad": {
+      "main": [
+        [
+          {
+            "node": "Es Disponible?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Es Disponible?": {
+      "main": [
+        [
+          {
+            "node": "Tiene Contacto?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta Reserva NO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene Contacto?": {
+      "main": [
+        [
+          {
+            "node": "Insertar Cita",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pedir Contacto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insertar Cita": {
+      "main": [
+        [
+          {
+            "node": "Limpiar Estado Cita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpiar Estado Cita": {
+      "main": [
+        [
+          {
+            "node": "Preparar Email Confirmación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta Reserva OK": {
+      "main": [
+        [
+          {
+            "node": "Responder a Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta Reserva NO": {
+      "main": [
+        [
+          {
+            "node": "Responder a Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pedir Contacto": {
+      "main": [
+        [
+          {
+            "node": "Responder a Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta Datos Incompletos": {
+      "main": [
+        [
+          {
+            "node": "Responder a Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA Conversacional": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Conversar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta Conversar": {
+      "main": [
+        [
+          {
+            "node": "Responder a Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder a Cursor": {
+      "main": [
+        [
+          {
+            "node": "¿Guardar respuesta IA?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Entrada": {
+      "main": [
+        [
+          {
+            "node": "¿Entrada webhook válida?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Entrada webhook válida?": {
+      "main": [
+        [
+          {
+            "node": "Datos Negocio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta Entrada Inválida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta Entrada Inválida": {
+      "main": [
+        [
+          {
+            "node": "Responder a Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Guardar respuesta IA?": {
+      "main": [
+        [
+          {
+            "node": "Fin sin persistir",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Guardar Msg IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Priorizar Reserva Fecha": {
+      "main": [
+        [
+          {
+            "node": "Es Cancelar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Email Confirmación": {
+      "main": [
+        [
+          {
+            "node": "¿Enviar email confirmación?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Enviar email confirmación?": {
+      "main": [
+        [
+          {
+            "node": "Resend Confirmación Cita",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta Reserva OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resend Confirmación Cita": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Reserva OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8816e91c-5a14-4057-a6a4-3e7161572dc8",
+  "meta": {
+    "instanceId": "92f72eaa1a483b11a6d6877f4419805a6005a975c3d38217b22885187092545f"
+  },
+  "id": "vvBWxrJVV7DeyQ0O",
+  "tags": []
+}
