@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { normalizeSupabaseProjectUrl } from "./normalize-url";
 
 const PUBLIC_PATHS = ["/", "/login", "/register", "/auth/callback", "/widget", "/demo"];
 
@@ -15,8 +16,12 @@ function isPublic(pathname: string): boolean {
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
+  const supabaseUrl = normalizeSupabaseProjectUrl(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!
+  );
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseUrl,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
