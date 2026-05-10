@@ -118,15 +118,18 @@ n8n busca el negocio por `negocio_id`, llama al modelo, guarda mensaje + respues
 
 ## Despliegue en Vercel
 
-1. **GitHub**: sube este repo (la carpeta raíz `saas/` o el monorepo entero).
-2. **Vercel** → **New Project** → importa el repo.
-3. Si el repo es el monorepo (carpetas `saas/`, etc.), en **Project → Settings → General → Root Directory** pon **`saas`**. Sin esto suele fallar el deploy (`next: command not found` o errores de tipo *Missing public directory*).
-4. **Environment Variables**:
+1. **GitHub**: importa este repo (monorepo con carpeta `saas/`).
+2. **Obligatorio** — **Project → Settings → General → Root Directory** → **`saas`**.  
+   Así Vercel ejecuta `next build` dentro de la carpeta correcta y genera las funciones sin romper el runtime. **No copies** `saas/.next` a la raíz del repo (eso provoca 500 genéricos como `/_error` en producción).
+3. **Build & Development Settings** (mismo sitio en Vercel): deja **Install** y **Build** por defecto (`npm install` y `next build` dentro de `saas`), o vacía overrides antiguos si los tenías del monorepo sin root directory.
+4. **Environment Variables** (Production):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (solo servidor, para `/api/widget/citas`)
    - `NEXT_PUBLIC_CHAT_ENDPOINT`
-5. Deploy.
-6. Vuelve a Supabase → Authentication → URL Configuration → añade el dominio Vercel.
+   - Opcional: `NEXT_PUBLIC_APP_URL` con tu dominio o `*.vercel.app`
+5. **Deploy** (Redeploy tras cambiar Root Directory).
+6. En **Supabase → Authentication → URL Configuration** añade la URL de tu app en Vercel.
 
 ## Lo que viene en Fase 2
 
