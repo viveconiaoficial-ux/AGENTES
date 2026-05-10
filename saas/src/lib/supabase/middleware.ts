@@ -26,6 +26,11 @@ export async function updateSession(request: NextRequest) {
 }
 
 async function updateSessionInner(request: NextRequest) {
+  const pathnameEarly = request.nextUrl.pathname;
+  if (pathnameEarly.startsWith("/_next")) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabaseUrl = normalizeSupabaseProjectUrl(

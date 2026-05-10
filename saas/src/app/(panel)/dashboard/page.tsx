@@ -8,18 +8,32 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const supabase = createClient();
 
-  const [
-    { data: negocios },
-    { count: convCount },
-    { count: citasCount },
-  ] = await Promise.all([
-    supabase
-      .from("negocios")
-      .select("id, nombre, created_at")
-      .order("created_at", { ascending: true }),
-    supabase.from("mensajes").select("*", { count: "exact", head: true }),
-    supabase.from("citas").select("*", { count: "exact", head: true }),
-  ]);
+  const negResPromise = supabase
+    .from("negocios")
+    .select("id, nombre, created_at")
+    .order("created_at", { ascending: true });
+  const msgResPromise = supabase
+    .from("mensajes")
+    .select("*", { count: "exact", head: true });
+  const citasResPromise = supabase
+    .from("citas")
+    .select("*", { count: "exact", head: true });
+
+  let negocios: Awaited<typeof negResPromise>["data"] = [];
+  let convCount = 0;
+  let citasCount = 0;
+  try {
+    const [negRes, msgRes, cRes] = await Promise.all([
+      negResPromise,
+      msgResPromise,
+      citasResPromise,
+    ]);
+    negocios = negRes.data ?? [];
+    convCount = msgRes.count ?? 0;
+    citasCount = cRes.count ?? 0;
+  } catch {
+    negocios = [];
+  }
 
   return (
     <div className={styles.page}>

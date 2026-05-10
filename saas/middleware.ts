@@ -8,10 +8,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Aplica a todas las rutas EXCEPTO:
-     * - _next/static, _next/image, favicon
-     * - rutas de fichero (.png, .jpg, .svg, etc.)
+     * No tocar todo /_next/* (solo excluir static/image rompe RSC / flight y da 500 en consola).
+     * Tampoco middleware en favicon, embed público ni imágenes estáticas.
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/|favicon.ico|embed\\.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

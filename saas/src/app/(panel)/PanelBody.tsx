@@ -8,12 +8,20 @@ export default async function PanelBody({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let emailDisplay: string | null = null;
 
-  if (!user) redirect("/login");
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.getUser();
+
+    if (error || !data?.user) {
+      redirect("/login");
+    }
+
+    emailDisplay = data.user.email ?? null;
+  } catch {
+    redirect("/login?error=panel");
+  }
 
   return (
     <div
@@ -26,7 +34,7 @@ export default async function PanelBody({
         color: "#ffffff",
       }}
     >
-      <Sidebar email={user.email} />
+      <Sidebar email={emailDisplay} />
       <main
         className={panelShell.main}
         style={{ flex: 1, minWidth: 0, overflowX: "hidden" }}

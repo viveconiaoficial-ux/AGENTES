@@ -19,6 +19,10 @@ export default function LoginPage() {
       setParamHint(
         "Hubo un fallo montando la sesión (middleware). Suele ser variables NEXT_PUBLIC_* en Vercel o cookies; prueba tras redeploy."
       );
+    } else if (err === "panel") {
+      setParamHint(
+        "No se pudo leer tu sesión en el panel (cookies o Supabase). Prueba cerrar sesión del navegador en este dominio y volver a entrar."
+      );
     } else if (err === "auth") {
       setParamHint(
         "No se pudo completar el login (callback). Revisa la URL del sitio en Supabase Authentication."
