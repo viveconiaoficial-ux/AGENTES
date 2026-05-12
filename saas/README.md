@@ -47,12 +47,15 @@ Y rellénalo:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://TU_PROYECTO.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+# Al menos una: destino del webhook web (agente-web) para el proxy /api/chat
 N8N_CHAT_WEBHOOK_URL=https://TU-N8N/webhook/agente-web
+# o la que ya tuvieras:
+# NEXT_PUBLIC_CHAT_ENDPOINT=https://TU-N8N/webhook/agente-web
 ```
 
 (El webhook debe ser el del flujo **web** en n8n, path `agente-web`, no el de WhatsApp.)
 
-Opcional: `NEXT_PUBLIC_CHAT_ENDPOINT` solo si quieres que el navegador llame **directo** a n8n (a veces falla por **CORS** entre dominios).
+El widget llama siempre a **`/api/chat`** en tu dominio; el servidor reenvía a la URL anterior (así se evita CORS).
 
 Esos valores los sacas en Supabase → **Project Settings → API**.
 
@@ -148,8 +151,7 @@ n8n busca el negocio por `negocio_id`, llama al modelo, guarda mensaje + respues
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY` (solo servidor, para `/api/widget/citas`)
-   - **`N8N_CHAT_WEBHOOK_URL`** — URL completa del webhook **web** (`…/webhook/agente-web`)
-   - Opcional: `NEXT_PUBLIC_CHAT_ENDPOINT` (llamada directa navegador→n8n; puede fallar por CORS)
+   - **`N8N_CHAT_WEBHOOK_URL`** o **`NEXT_PUBLIC_CHAT_ENDPOINT`** — al menos una, con la URL del webhook **web** (`…/webhook/agente-web`)
    - Opcional: `NEXT_PUBLIC_APP_URL` con tu dominio o `*.vercel.app`
 6. **Deploy** (Redeploy tras cambiar Root Directory o `vercel.json`).
 7. En **Supabase → Authentication → URL Configuration** añade la URL de tu app en Vercel.

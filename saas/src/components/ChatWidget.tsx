@@ -56,7 +56,7 @@ interface ChatMessage {
   ts: number;
 }
 
-/** Same-origin /api/chat por defecto (evita CORS con n8n); override con NEXT_PUBLIC_CHAT_ENDPOINT. */
+/** Siempre same-origin; el servidor usa N8N_CHAT_WEBHOOK_URL o NEXT_PUBLIC_CHAT_ENDPOINT. */
 const DEFAULT_ENDPOINT = getPublicChatEndpoint();
 
 const SESSION_KEY = (negocioId: string) => `vive.chat.session.${negocioId}`;

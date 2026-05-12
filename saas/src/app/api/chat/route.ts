@@ -1,23 +1,30 @@
 import { NextResponse } from "next/server";
 
 /**
- * Reenvía el cuerpo del widget a n8n desde el servidor (sin CORS en el cliente).
- * Configura N8N_CHAT_WEBHOOK_URL en Vercel / .env.local con la URL del webhook web
- * (ej. https://tu-dominio/webhook/agente-web), no el de WhatsApp.
+ * Destino n8n (webhook agente-web). Orden de preferencia:
+ * 1) N8N_CHAT_WEBHOOK_URL — recomendado (solo servidor)
+ * 2) CHAT_WEBHOOK_URL — alias
+ * 3) NEXT_PUBLIC_CHAT_ENDPOINT — si ya la tenías en Vercel, vale como destino del proxy
  */
-const UPSTREAM =
-  process.env.N8N_CHAT_WEBHOOK_URL?.trim() ||
-  process.env.CHAT_WEBHOOK_URL?.trim() ||
-  "";
+function resolveUpstream(): string {
+  return (
+    process.env.N8N_CHAT_WEBHOOK_URL?.trim() ||
+    process.env.CHAT_WEBHOOK_URL?.trim() ||
+    process.env.NEXT_PUBLIC_CHAT_ENDPOINT?.trim() ||
+    ""
+  );
+}
 
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
+  const UPSTREAM = resolveUpstream();
+
   if (!UPSTREAM) {
     return NextResponse.json(
       {
         respuesta:
-          "Configuración incompleta: falta N8N_CHAT_WEBHOOK_URL en el servidor (URL del webhook «agente web» en n8n).",
+          "Falta la URL del webhook de n8n en el servidor. En Vercel añade una de estas variables (Production): N8N_CHAT_WEBHOOK_URL o NEXT_PUBLIC_CHAT_ENDPOINT, con la URL completa del flujo web (…/webhook/agente-web). Luego Redeploy.",
         error: "missing_upstream",
       },
       { status: 503 }
