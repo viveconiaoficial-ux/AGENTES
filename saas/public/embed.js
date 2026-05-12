@@ -24,8 +24,9 @@
   iframe.style.right = "16px";
   iframe.style.bottom = "16px";
   if (startExpanded) {
-    iframe.style.width = "min(92vw, 420px)";
-    iframe.style.height = "min(78vh, 660px)";
+    /* Debe caber chat + calendario (fila en pantallas anchas) y el pie con el input en todas */
+    iframe.style.width = "min(98vw, 940px)";
+    iframe.style.height = "min(92dvh, 780px)";
   } else {
     iframe.style.width = "88px";
     iframe.style.height = "88px";
@@ -42,8 +43,8 @@
     if (!event.data || typeof event.data !== "object") return;
     if (event.data.type !== "vive-widget-toggle") return;
     if (event.data.open) {
-      iframe.style.width = "min(92vw, 420px)";
-      iframe.style.height = "min(78vh, 660px)";
+      iframe.style.width = "min(98vw, 940px)";
+      iframe.style.height = "min(92dvh, 780px)";
     } else {
       iframe.style.width = "88px";
       iframe.style.height = "88px";

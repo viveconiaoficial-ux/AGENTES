@@ -7,20 +7,26 @@ import styles from "./Sidebar.module.css";
 export default function PortalSidebar({
   email,
   negocioNombre,
+  navBasePath = "/portal",
 }: {
   email?: string | null;
   negocioNombre?: string | null;
+  /** Base para enlaces (p. ej. `/clientes/uuid/vista-portal`). Por defecto el portal real del dueño. */
+  navBasePath?: string;
 }) {
   const pathname = usePathname();
 
+  const calHref = `${navBasePath}/calendario`;
+  const convHref = `${navBasePath}/conversaciones`;
+
   const nav = [
-    { href: "/portal/calendario", label: "Calendario", icon: IconCal },
-    { href: "/portal/conversaciones", label: "Conversaciones", icon: IconChat },
+    { href: calHref, label: "Calendario", icon: IconCal },
+    { href: convHref, label: "Conversaciones", icon: IconChat },
   ];
 
   return (
     <aside className={styles.aside}>
-      <Link href="/portal/calendario" className={styles.brand}>
+      <Link href={calHref} className={styles.brand}>
         Mi negocio <span className={styles.brandMuted}>· Panel</span>
       </Link>
 

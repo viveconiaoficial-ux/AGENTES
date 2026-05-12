@@ -87,7 +87,11 @@ export default async function DemoClientePage({
 
   return (
     <main
-      className="relative min-h-screen overflow-x-hidden text-white"
+      className={
+        embedMode
+          ? "relative h-[100dvh] max-h-[100dvh] min-h-0 overflow-hidden text-white"
+          : "relative min-h-screen overflow-x-hidden text-white"
+      }
       style={{ background: embedMode ? "transparent" : undefined }}
     >
       {!embedMode && (

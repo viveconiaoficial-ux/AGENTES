@@ -570,10 +570,10 @@ export default function ChatWidget({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 24, scale: 0.96 }}
               transition={{ type: "spring", stiffness: 260, damping: 26 }}
-              className="relative z-10 flex w-full max-w-[min(100vw-1rem,960px)] flex-col items-stretch justify-center gap-3 md:flex-row md:items-stretch"
+              className="relative z-10 flex w-full max-w-[min(100vw-0.5rem,960px)] max-h-[calc(100dvh-1.25rem)] min-h-0 flex-col items-stretch gap-2 sm:flex-row sm:items-stretch sm:gap-3"
             >
               <div
-                className="relative flex h-[min(78vh,720px)] w-full min-w-0 flex-col overflow-hidden rounded-3xl md:w-[min(94vw,560px)]"
+                className="relative flex min-h-0 w-full min-w-0 max-h-full flex-1 flex-col overflow-hidden rounded-3xl sm:h-full sm:max-h-full sm:w-[min(94vw,560px)] sm:flex-none"
                 style={{
                   color: tk.textBase,
                   border: `1px solid ${tk.border}`,
@@ -775,10 +775,10 @@ export default function ChatWidget({
                 ) : null}
 
                 {activeTab === "chat" ? (
-                  <>
+                  <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
                     <div
                       ref={scrollRef}
-                      className="vc-scroll min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4"
+                      className="vc-scroll min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-4 py-4"
                     >
                       <AnimatePresence initial={false}>
                         {messages.map((m) => (
@@ -924,12 +924,12 @@ export default function ChatWidget({
                         Enter para enviar · Shift+Enter para salto de línea
                       </div>
                     </div>
-                  </>
+                  </div>
                 ) : (
                   <div className="vc-scroll flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-3">
                     {showAgenda ? (
                       <div
-                        className="-mx-1 shrink-0 overflow-hidden rounded-2xl md:hidden"
+                        className="-mx-1 shrink-0 overflow-hidden rounded-2xl sm:hidden"
                         style={{
                           border: `1px solid ${tk.borderSoft}`,
                           background: tk.bubbleAssistantBg,
@@ -1067,7 +1067,7 @@ export default function ChatWidget({
             </div>
             {showAgenda ? (
               <div
-                className="relative z-10 hidden h-[min(78vh,720px)] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-3xl md:flex md:w-[min(94vw,320px)]"
+                className="relative z-10 hidden h-full max-h-full min-h-0 w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-3xl sm:flex sm:h-full sm:w-[min(94vw,320px)] sm:max-h-full"
                 style={{
                   color: tk.textBase,
                   border: `1px solid ${tk.border}`,

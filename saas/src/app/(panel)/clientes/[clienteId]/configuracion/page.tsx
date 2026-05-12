@@ -1,5 +1,6 @@
-import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
+import { notFound } from "next/navigation";import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import PortalAccesoDueñoForm from "./PortalAccesoDueñoForm";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,17 @@ export default async function ClienteConfiguracionPage({
     .maybeSingle();
 
   if (!negocio) notFound();
+
+  let portalDueñoEmail: string | null = null;
+  if (negocio.portal_user_id) {
+    try {
+      const admin = createServiceClient();
+      const { data, error } = await admin.auth.admin.getUserById(negocio.portal_user_id);
+      if (!error && data.user?.email) portalDueñoEmail = data.user.email;
+    } catch {
+      /* sin SUPABASE_SERVICE_ROLE_KEY en local u otro error */
+    }
+  }
 
   const appUrl =
     process.env.NEXT_PUBLIC_APP_URL ||
@@ -52,18 +64,61 @@ export default async function ClienteConfiguracionPage({
         </p>
       </header>
 
+      <section className="glass rounded-2xl border border-sky-500/25 bg-sky-500/5 p-6">
+        <div className="text-[11px] uppercase tracking-wider text-sky-200/80">
+          Vista previa del portal del dueño
+        </div>
+        <p className="mt-2 text-sm text-white/65">
+          Abre el mismo calendario y conversaciones que verá el dueño cuando entre en{" "}
+          <code className="rounded bg-black/40 px-1 text-[11px]">/portal</code>, sin cerrar tu sesión de agencia ni
+          buscar otro usuario.
+        </p>
+        <Link
+          href={`/clientes/${negocio.id}/vista-portal/calendario`}
+          className="mt-4 inline-flex items-center justify-center rounded-xl bg-sky-500 px-5 py-2.5 text-sm font-semibold text-sky-950 shadow hover:bg-sky-400"
+        >
+          Ver portal como lo verá el dueño
+        </Link>
+      </section>
+
       <section className="glass rounded-2xl p-6">
         <div className="text-[11px] uppercase tracking-wider text-white/40">
+          Qué tienes que hacer tú (mínimo)
+        </div>
+        <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-white/60">
+          <li>
+            En{" "}
+            <strong className="text-white/85 font-medium">Supabase → Authentication → URL configuration</strong>: pon tu
+            URL pública de la app y añade en <strong className="text-white/85 font-medium">Redirect URLs</strong> la
+            ruta <code className="rounded bg-white/10 px-1 text-[12px]">{appUrl}/portal</code> (ajusta el dominio si
+            hace falta).
+          </li>
+          <li>
+            En <strong className="text-white/85 font-medium">Vercel</strong>:{" "}
+            <code className="rounded bg-white/10 px-1 text-[12px]">SUPABASE_SERVICE_ROLE_KEY</code> y{" "}
+            <code className="rounded bg-white/10 px-1 text-[12px]">NEXT_PUBLIC_APP_URL</code> apuntando a tu dominio
+            real.
+          </li>
+          <li>
+            En la sección de abajo: email del dueño y <strong className="text-white/85 font-medium">Dar acceso</strong>.
+            El dueño entra en <code className="rounded bg-white/10 px-1 text-[12px]">{appUrl}/portal</code> con ese
+            correo.
+          </li>
+        </ol>
+      </section>
+
+      <section className="glass rounded-2xl p-6">        <div className="text-[11px] uppercase tracking-wider text-white/40">
           Acceso del dueño (sin diseño del widget)
         </div>
         <p className="mt-2 text-sm text-white/55">
-          El cliente ve su calendario y conversaciones en <code className="text-xs">/portal</code>. Tú sigues
-          controlando colores, demo y script del chat.
+          El dueño entra solo con su email (tú pulsas un botón aquí). Ve calendario y conversaciones en{" "}
+          <code className="text-xs">/portal</code>, no el widget público.
         </p>
         <div className="mt-4">
           <PortalAccesoDueñoForm
             negocioId={negocio.id}
             portalUserIdActual={negocio.portal_user_id}
+            portalDueñoEmail={portalDueñoEmail}
           />
         </div>
       </section>

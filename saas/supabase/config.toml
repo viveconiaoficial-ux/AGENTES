@@ -1,0 +1,16 @@
+# Configuración local (supabase start) y referencia para Auth.
+# Proyecto en la nube: revisa Dashboard → Authentication → URL configuration
+# y añade tu URL de producción y https://TU_DOMINIO/portal en Redirect URLs.
+
+[api]
+enabled = true
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = [
+  "http://localhost:3000",
+  "http://localhost:3000/portal",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3000/portal",
+]

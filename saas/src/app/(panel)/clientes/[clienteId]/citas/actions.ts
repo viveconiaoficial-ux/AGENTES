@@ -47,6 +47,7 @@ export async function crearCitaCliente(negocioId: string, data: CitaFormInput) {
   if (error) return { error: error.message };
   revalidatePath(`/clientes/${negocioId}/citas`);
   revalidatePath("/portal/calendario");
+  revalidatePath(`/clientes/${negocioId}/vista-portal/calendario`);
   return { ok: true as const };
 }
 
@@ -83,6 +84,7 @@ export async function actualizarCitaCliente(
   if (error) return { error: error.message };
   revalidatePath(`/clientes/${negocioId}/citas`);
   revalidatePath("/portal/calendario");
+  revalidatePath(`/clientes/${negocioId}/vista-portal/calendario`);
   return { ok: true as const };
 }
 
@@ -99,5 +101,6 @@ export async function eliminarCitaCliente(citaId: string, negocioId: string) {
   if (error) return { error: error.message };
   revalidatePath(`/clientes/${negocioId}/citas`);
   revalidatePath("/portal/calendario");
+  revalidatePath(`/clientes/${negocioId}/vista-portal/calendario`);
   return { ok: true as const };
 }

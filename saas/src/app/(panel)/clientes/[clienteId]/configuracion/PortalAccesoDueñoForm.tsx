@@ -1,66 +1,210 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { actualizarPortalUsuarioDueño } from "./portal-acceso-actions";
+import {
+  actualizarPortalUsuarioDueño,
+  vincularPortalDueñoPorEmail,
+} from "./portal-acceso-actions";
 
 export default function PortalAccesoDueñoForm({
   negocioId,
   portalUserIdActual,
+  portalDueñoEmail,
 }: {
   negocioId: string;
   portalUserIdActual: string | null;
+  portalDueñoEmail: string | null;
 }) {
   const router = useRouter();
-  const [value, setValue] = useState(portalUserIdActual ?? "");
+  const [emailDueño, setEmailDueño] = useState(portalDueñoEmail ?? "");
+  const [uuidAvanzado, setUuidAvanzado] = useState(portalUserIdActual ?? "");
   const [msg, setMsg] = useState<string | null>(null);
-  const [pending, start] = useTransition();
+  const [msgTone, setMsgTone] = useState<"ok" | "err">("ok");
+  const [pendingEmail, startEmail] = useTransition();
+  const [pendingUuid, startUuid] = useTransition();
+  const [pendingQuitar, startQuitar] = useTransition();
+  const [originCliente, setOriginCliente] = useState<string | null>(null);
 
-  function onSubmit(e: React.FormEvent) {
+  useEffect(() => {
+    setOriginCliente(window.location.origin);
+  }, []);
+
+  useEffect(() => {
+    setEmailDueño(portalDueñoEmail ?? "");
+    setUuidAvanzado(portalUserIdActual ?? "");
+  }, [portalDueñoEmail, portalUserIdActual]);
+
+  const envBase = (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
+  const portalUrlCompleta = envBase
+    ? `${envBase}/portal`
+    : originCliente
+      ? `${originCliente}/portal`
+      : null;
+
+  function onVincularEmail(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
-    start(async () => {
-      const r = await actualizarPortalUsuarioDueño(negocioId, value);
-      if (r.error) setMsg(r.error);
-      else {
-        setMsg("Guardado.");
+    startEmail(async () => {
+      const r = await vincularPortalDueñoPorEmail(negocioId, emailDueño);
+      if ("error" in r && r.error) {
+        setMsgTone("err");
+        setMsg(r.error);
+        return;
+      }
+      if ("ok" in r && r.ok) {
+        setMsgTone("ok");
+        setMsg(r.mensaje);
         router.refresh();
       }
     });
   }
 
+  function onGuardarUuid(e: React.FormEvent) {
+    e.preventDefault();
+    setMsg(null);
+    startUuid(async () => {
+      const r = await actualizarPortalUsuarioDueño(negocioId, uuidAvanzado);
+      if (r.error) {
+        setMsgTone("err");
+        setMsg(r.error);
+        return;
+      }
+      setMsgTone("ok");
+      setMsg("UUID guardado.");
+      router.refresh();
+    });
+  }
+
+  function onQuitarAcceso() {
+    if (!confirm("¿Quitar el acceso del dueño al portal? Podrás volver a vincular otro email.")) {
+      return;
+    }
+    setMsg(null);
+    startQuitar(async () => {
+      const r = await actualizarPortalUsuarioDueño(negocioId, "");
+      if (r.error) {
+        setMsgTone("err");
+        setMsg(r.error);
+        return;
+      }
+      setMsgTone("ok");
+      setMsg("Acceso quitado.");
+      setEmailDueño("");
+      setUuidAvanzado("");
+      router.refresh();
+    });
+  }
+
   return (
-    <form onSubmit={onSubmit} className="space-y-3">
-      <label className="block">
-        <span className="text-[11px] uppercase tracking-wide text-white/45">
-          UUID del usuario del dueño (Supabase → Authentication → Users)
-        </span>
-        <input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="Dejar vacío para quitar acceso al portal"
-          className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-white/25"
-        />
-      </label>
-      <p className="text-xs text-white/45 leading-relaxed">
-        El dueño se registra o tú lo creas en Auth. Copia su <strong>User UID</strong> y pégalo aquí.
-        Esa persona entrará en <code className="text-[11px]">/portal</code> y verá solo calendario y
-        conversaciones, sin diseño del widget ni códigos de inserción.
-      </p>
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="space-y-5">
+      <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-[13px] leading-relaxed text-emerald-100/95">
+        <p className="font-medium text-emerald-50">Forma fácil (recomendada)</p>
+        <ol className="mt-2 list-decimal space-y-1 pl-5 text-emerald-100/85">
+          <li>Pregunta al dueño <strong>qué email quiere usar</strong> (el mismo para entrar al portal).</li>
+          <li>
+            Escríbelo abajo y pulsa <strong>Dar acceso</strong>. Si no tenía cuenta, Supabase le enviará un correo
+            para activarla.
+          </li>
+          <li>
+            Dile que entre en la URL del portal (copia la de abajo), abra el correo si acaba de invitarle y ya.
+          </li>
+        </ol>
+      </div>
+
+      {portalUserIdActual ? (
+        <div className="rounded-xl border border-white/12 bg-white/[0.06] px-3 py-2 text-sm text-white/80">
+          Estado: <span className="text-emerald-300">acceso del dueño activo</span>
+          {portalDueñoEmail ? (
+            <>
+              {" "}
+              → <span className="text-white">{portalDueñoEmail}</span>
+            </>
+          ) : (
+            <span className="text-white/45"> (no vemos el email sin clave de servicio en servidor)</span>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-white/50">Todavía no hay dueño vinculado a este negocio.</p>
+      )}
+
+      <form onSubmit={onVincularEmail} className="space-y-2">
+        <label className="block">
+          <span className="text-[11px] uppercase tracking-wide text-white/45">Email del dueño</span>
+          <input
+            type="email"
+            autoComplete="email"
+            value={emailDueño}
+            onChange={(e) => setEmailDueño(e.target.value)}
+            placeholder="ej. maria@clinica.com"
+            className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-sm text-white outline-none focus:border-white/25"
+          />
+        </label>
+        <p className="text-[11px] text-white/40">
+          Requiere{" "}
+          <code className="rounded bg-black/40 px-1 py-0.5 text-[10px]">SUPABASE_SERVICE_ROLE_KEY</code> en el
+          servidor (Vercel). Ahí mismo debe estar bien configurado el correo de Auth en Supabase.
+        </p>
         <button
           type="submit"
-          disabled={pending}
-          className="rounded-xl bg-white/15 px-4 py-2 text-sm font-medium text-white ring-1 ring-white/20 hover:bg-white/20 disabled:opacity-50"
+          disabled={pendingEmail || !emailDueño.trim()}
+          className="w-full rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-zinc-900 shadow hover:bg-white/90 disabled:opacity-50 sm:w-auto"
         >
-          {pending ? "Guardando…" : "Guardar acceso del dueño"}
+          {pendingEmail ? "Procesando…" : "Dar acceso con este email"}
         </button>
-        {msg ? (
-          <span className={`text-sm ${msg === "Guardado." ? "text-emerald-300" : "text-red-300"}`}>
-            {msg}
-          </span>
-        ) : null}
+      </form>
+
+      <div className="space-y-1">
+        <span className="text-[11px] uppercase tracking-wide text-white/45">URL donde entra el dueño</span>
+        <div className="rounded-xl border border-white/10 bg-black/25 px-3 py-2 font-mono text-[11px] text-white/80 break-all">
+          {portalUrlCompleta ?? (
+            <span className="text-white/40">
+              Define <code className="text-[10px]">NEXT_PUBLIC_APP_URL</code> en Vercel para mostrar el enlace
+              exacto.
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-white/45">
+          Esto no es el widget de la web del cliente: es el panel reducido solo para calendario y conversaciones.
+        </p>
       </div>
-    </form>
+
+      {portalUserIdActual ? (
+        <button
+          type="button"
+          onClick={onQuitarAcceso}
+          disabled={pendingQuitar}
+          className="text-sm text-red-300/90 underline-offset-2 hover:underline disabled:opacity-50"
+        >
+          {pendingQuitar ? "Quitando…" : "Quitar acceso del dueño"}
+        </button>
+      ) : null}
+
+      <details className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm">
+        <summary className="cursor-pointer select-none text-white/55">Opción avanzada: pegar UUID de Supabase</summary>
+        <p className="mt-2 text-xs text-white/40 leading-relaxed">
+          Solo si ya copiaste el User UID desde Supabase → Authentication → Users.
+        </p>
+        <form onSubmit={onGuardarUuid} className="mt-2 space-y-2">
+          <input
+            value={uuidAvanzado}
+            onChange={(e) => setUuidAvanzado(e.target.value)}
+            placeholder="UUID o vacío para quitar"
+            className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 font-mono text-xs text-white outline-none focus:border-white/25"
+          />
+          <button
+            type="submit"
+            disabled={pendingUuid}
+            className="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-white/15 hover:bg-white/15 disabled:opacity-50"
+          >
+            {pendingUuid ? "Guardando…" : "Guardar UUID"}
+          </button>
+        </form>
+      </details>
+
+      {msg ? (
+        <p className={`text-sm ${msgTone === "ok" ? "text-emerald-300" : "text-red-300"}`}>{msg}</p>
+      ) : null}
+    </div>
   );
 }
