@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";import { createClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import PortalAccesoDueñoForm from "./PortalAccesoDueñoForm";
 
@@ -107,7 +108,24 @@ export default async function ClienteConfiguracionPage({
         </ol>
       </section>
 
-      <section className="glass rounded-2xl p-6">        <div className="text-[11px] uppercase tracking-wider text-white/40">
+      <section className="glass rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.07] p-6">
+        <div className="text-[11px] uppercase tracking-wider text-emerald-200/85">
+          Prompt del agente desde la web del cliente
+        </div>
+        <p className="mt-2 text-sm text-white/65">
+          Abre la herramienta <strong className="text-white/90">Brief desde web</strong>, pega la URL de la empresa y
+          obtén ficha + prompt listo para n8n. Vuelve aquí con el texto o enlaza desde el menú lateral.
+        </p>
+        <Link
+          href="/herramientas/brief-agente"
+          className="mt-4 inline-flex items-center justify-center rounded-xl bg-emerald-500/90 px-5 py-2.5 text-sm font-semibold text-emerald-950 shadow hover:bg-emerald-400"
+        >
+          Generar brief y prompt
+        </Link>
+      </section>
+
+      <section className="glass rounded-2xl p-6">
+        <div className="text-[11px] uppercase tracking-wider text-white/40">
           Acceso del dueño (sin diseño del widget)
         </div>
         <p className="mt-2 text-sm text-white/55">

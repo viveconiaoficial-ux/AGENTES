@@ -12,6 +12,11 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
   const nav = [
     { href: "/dashboard", label: "Dashboard", icon: IconDash },
+    {
+      href: "/herramientas/brief-agente",
+      label: "Brief desde web",
+      icon: IconBrief,
+    },
     ...(clienteId
       ? [
           {
@@ -86,6 +91,26 @@ export default function Sidebar({ email }: { email?: string | null }) {
         </form>
       </div>
     </aside>
+  );
+}
+
+function IconBrief({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden>
+      <path
+        d="M8 4h8v16H8V4Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 8h8M8 12h6M8 16h5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path d="M11 4V2M13 4V2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
   );
 }
 

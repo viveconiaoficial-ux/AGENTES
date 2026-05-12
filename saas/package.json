@@ -11,6 +11,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.46.1",
+    "cheerio": "^1.0.0",
     "framer-motion": "^11.18.2",
     "next": "^14.2.18",
     "pg": "^8.20.0",

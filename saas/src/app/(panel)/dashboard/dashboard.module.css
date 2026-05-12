@@ -38,6 +38,70 @@
   }
 }
 
+.toolPromo {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  border-radius: 1rem;
+  padding: 1.35rem 1.5rem;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.12) 0%,
+    rgba(9, 9, 11, 0.72) 55%
+  );
+}
+
+@media (min-width: 640px) {
+  .toolPromo {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.toolPromoEyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(167, 243, 208, 0.85);
+}
+
+.toolPromoTitle {
+  margin: 0.35rem 0 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.toolPromoLead {
+  margin: 0.45rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.58);
+  max-width: 36rem;
+}
+
+.toolPromoBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #052e1f;
+  background: rgba(52, 211, 153, 0.95);
+  text-decoration: none;
+  border: 1px solid rgba(167, 243, 208, 0.5);
+  transition: background 0.15s ease;
+}
+
+.toolPromoBtn:hover {
+  background: rgba(110, 231, 183, 1);
+}
+
 .statCard {
   border-radius: 1rem;
   padding: 1.25rem;

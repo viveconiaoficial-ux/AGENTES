@@ -51,6 +51,20 @@ export default async function DashboardPage() {
         <Stat label="Citas" value={citasCount ?? 0} />
       </section>
 
+      <section className={styles.toolPromo}>
+        <div>
+          <div className={styles.toolPromoEyebrow}>Herramienta</div>
+          <h2 className={styles.toolPromoTitle}>Brief y prompt desde la URL del cliente</h2>
+          <p className={styles.toolPromoLead}>
+            Pega la web de la empresa y obtén una ficha y un prompt completo para el agente (opcional con IA vía
+            OpenRouter).
+          </p>
+        </div>
+        <Link href="/herramientas/brief-agente" className={styles.toolPromoBtn}>
+          Abrir «Brief desde web»
+        </Link>
+      </section>
+
       <NewClientForm />
 
       <section className={styles.listSection}>
