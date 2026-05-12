@@ -133,6 +133,7 @@ export async function vincularPortalDueñoPorEmail(negocioId: string, emailRaw: 
 
   revalidatePath(`/clientes/${negocioId}/configuracion`);
   revalidatePath("/portal/calendario");
+  revalidatePath("/portal/citas");
 
   return {
     ok: true as const,
@@ -164,5 +165,6 @@ export async function actualizarPortalUsuarioDueño(
 
   revalidatePath(`/clientes/${negocioId}/configuracion`);
   revalidatePath("/portal/calendario");
+  revalidatePath("/portal/citas");
   return { ok: true as const };
 }

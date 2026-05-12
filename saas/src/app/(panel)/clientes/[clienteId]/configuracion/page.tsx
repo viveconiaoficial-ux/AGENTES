@@ -75,7 +75,7 @@ export default async function ClienteConfiguracionPage({
           buscar otro usuario.
         </p>
         <Link
-          href={`/clientes/${negocio.id}/vista-portal/calendario`}
+          href={`/clientes/${negocio.id}/vista-portal/citas`}
           className="mt-4 inline-flex items-center justify-center rounded-xl bg-sky-500 px-5 py-2.5 text-sm font-semibold text-sky-950 shadow hover:bg-sky-400"
         >
           Ver portal como lo verá el dueño
@@ -126,11 +126,15 @@ export default async function ClienteConfiguracionPage({
 
       <section className="glass rounded-2xl p-6">
         <div className="text-[11px] uppercase tracking-wider text-white/40">
-          Acceso del dueño (sin diseño del widget)
+          Acceso del dueño (portal todo en uno)
         </div>
         <p className="mt-2 text-sm text-white/55">
-          El dueño entra solo con su email (tú pulsas un botón aquí). Ve calendario y conversaciones en{" "}
-          <code className="text-xs">/portal</code>, no el widget público.
+          El dueño entra con su email en{" "}
+          <code className="rounded bg-white/10 px-1 text-xs">{appUrl}/portal</code>: ahí tiene{" "}
+          <strong className="text-white/80">reservas</strong>, el mismo{" "}
+          <strong className="text-white/80">asistente IA</strong> que en la web (pestaña «Agenda» incluida), calendario
+          editable y conversaciones. El <strong className="text-white/80">script del widget</strong> de abajo sigue
+          siendo para la página pública donde entran <em>sus clientes</em> (no sustituye al portal).
         </p>
         <div className="mt-4">
           <PortalAccesoDueñoForm

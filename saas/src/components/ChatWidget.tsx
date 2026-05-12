@@ -35,8 +35,8 @@ export interface ChatWidgetProps {
   defaultOpen?: boolean;
   /** Pestaña «Agenda» en el widget (muestra citas de la sesión; el dueño ve todas en el panel). */
   enableAgenda?: boolean;
-  /** Posición del widget. `center` agrupa burbuja/panel al centro (p. ej. página demo). */
-  position?: "bottom-right" | "bottom-left" | "center";
+  /** Posición del widget. `inline` incrusta el panel en el flujo (p. ej. portal del dueño sin tapar el menú). */
+  position?: "bottom-right" | "bottom-left" | "center" | "inline";
   /** Si `position` es `center`, contenido opcional encima de la burbuja (texto de la página demo). */
   floatingIntro?: ReactNode;
 }
@@ -276,7 +276,7 @@ export default function ChatWidget({
     ta.style.height = Math.min(ta.scrollHeight, 140) + "px";
   }, [input]);
 
-  const isCenter = position === "center";
+  const isCenterLayout = position === "center" || position === "inline";
 
   const positionClasses = useMemo(
     () =>
@@ -521,7 +521,7 @@ export default function ChatWidget({
               whileTap={{ scale: 0.96 }}
               aria-label="Abrir chat"
               className={`group relative z-10 rounded-full text-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.7)] outline-none ring-0 ${
-                isCenter ? "h-[4.25rem] w-[4.25rem]" : "h-14 w-14"
+                isCenterLayout ? "h-[4.25rem] w-[4.25rem]" : "h-14 w-14"
               }`}
               style={{
                 background:
@@ -540,7 +540,7 @@ export default function ChatWidget({
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
-                className={`relative mx-auto ${isCenter ? "h-7 w-7" : "h-6 w-6"}`}
+                className={`relative mx-auto ${isCenterLayout ? "h-7 w-7" : "h-6 w-6"}`}
                 aria-hidden
               >
                 <path
@@ -1113,9 +1113,11 @@ export default function ChatWidget({
     fontFamily: 'Inter, "SF Pro Display", "Geist", system-ui, sans-serif',
   } as const;
 
+  const isCenterOverlay = position === "center";
+
   return (
     <>
-      {isCenter ? (
+      {isCenterOverlay ? (
         <div
           className="fixed inset-0 z-[2147483000] flex items-center justify-center pointer-events-none p-5 sm:p-8"
           style={fontStack}
@@ -1134,6 +1136,12 @@ export default function ChatWidget({
             <div className="relative z-20 flex w-full flex-col items-center pointer-events-auto">
               {widgetBody}
             </div>
+          </div>
+        </div>
+      ) : position === "inline" ? (
+        <div className="relative z-[1] w-full min-w-0" style={fontStack}>
+          <div className="pointer-events-auto mx-auto flex w-full max-w-[min(100%,62rem)] min-w-0 flex-col items-center">
+            {widgetBody}
           </div>
         </div>
       ) : (

@@ -34,7 +34,7 @@ export default async function PanelBody({
     getPortalNegocioForUser(),
   ]);
   if (!owns && portalAsignado) {
-    redirect("/portal/calendario");
+    redirect("/portal/citas");
   }
 
   return (

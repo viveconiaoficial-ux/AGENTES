@@ -5,5 +5,5 @@ export default function VistaPortalIndexPage({
 }: {
   params: { clienteId: string };
 }) {
-  redirect(`/clientes/${params.clienteId}/vista-portal/calendario`);
+  redirect(`/clientes/${params.clienteId}/vista-portal/citas`);
 }

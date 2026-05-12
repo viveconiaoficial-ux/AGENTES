@@ -16,17 +16,21 @@ export default function PortalSidebar({
 }) {
   const pathname = usePathname();
 
+  const citasHref = `${navBasePath}/citas`;
+  const asistenteHref = `${navBasePath}/asistente`;
   const calHref = `${navBasePath}/calendario`;
   const convHref = `${navBasePath}/conversaciones`;
 
   const nav = [
+    { href: citasHref, label: "Reservas", icon: IconReservas },
+    { href: asistenteHref, label: "Asistente", icon: IconAsistente },
     { href: calHref, label: "Calendario", icon: IconCal },
     { href: convHref, label: "Conversaciones", icon: IconChat },
   ];
 
   return (
     <aside className={styles.aside}>
-      <Link href={calHref} className={styles.brand}>
+      <Link href={citasHref} className={styles.brand}>
         Mi negocio <span className={styles.brandMuted}>· Panel</span>
       </Link>
 
@@ -59,8 +63,8 @@ export default function PortalSidebar({
       </nav>
 
       <p className={styles.hint}>
-        El diseño del chat y la instalación en web los gestiona tu agencia; aquí solo ves actividad
-        y citas.
+        Reservas, chat con IA (igual que en tu web) y conversaciones en un solo acceso. El script del widget en la
+        web lo sigue dando tu agencia para tus visitantes.
       </p>
 
       <div className={styles.footer}>
@@ -73,6 +77,43 @@ export default function PortalSidebar({
         </form>
       </div>
     </aside>
+  );
+}
+
+function IconReservas({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden>
+      <path
+        d="M8 6h12M8 12h12M8 18h8"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M4 6h1M4 12h1M4 18h1"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function IconAsistente({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden>
+      <path
+        d="M12 3v2.25M12 18.75V21M3 12h2.25M18.75 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+    </svg>
   );
 }
 
