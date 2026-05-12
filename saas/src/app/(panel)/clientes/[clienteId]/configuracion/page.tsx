@@ -24,6 +24,19 @@ export default async function ClienteConfiguracionPage({
   const demoUrl = `${appUrl}/demo/${negocio.id}`;
   const widgetSnippet = `<script defer src="${appUrl}/embed.js" data-negocio="${negocio.id}"></script>`;
 
+  let demoHostLooksLikeVercelPreview = false;
+  try {
+    const host = new URL(appUrl).hostname;
+    if (host.endsWith(".vercel.app")) {
+      const firstLabel = host.split(".")[0] ?? "";
+      demoHostLooksLikeVercelPreview = (firstLabel.match(/-/g) ?? []).length >= 2;
+    }
+  } catch {
+    demoHostLooksLikeVercelPreview = false;
+  }
+  const demoMayBeBlockedExternally =
+    process.env.VERCEL_ENV === "preview" || demoHostLooksLikeVercelPreview;
+
   return (
     <div className="space-y-6">
       <header>
@@ -63,6 +76,15 @@ export default async function ClienteConfiguracionPage({
         <pre className="mt-3 overflow-x-auto rounded-lg bg-black/50 p-4 text-[12px] text-white/85 ring-1 ring-white/10">
 {demoUrl}
         </pre>
+        {demoMayBeBlockedExternally ? (
+          <p className="mt-3 rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-[13px] text-amber-100/90 leading-relaxed">
+            Este dominio parece un preview de Vercel: si el cliente ve una pantalla de login o error 401,
+            es la protección de despliegues del panel de Vercel,
+            no el widget. Opciones: definir <code className="text-[12px]">NEXT_PUBLIC_APP_URL</code> con
+            tu URL de producción y compartir ese enlace, o en
+            Vercel ajustar Deployment Protection para permitir visitantes externos en previews.
+          </p>
+        ) : null}
       </section>
 
       <section className="glass rounded-2xl p-6">
