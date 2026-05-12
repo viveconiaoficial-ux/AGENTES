@@ -250,8 +250,8 @@ export default function SessionAgendaCalendar({
           </ul>
         </div>
       ) : (
-        <p className="mt-2 shrink-0 text-center text-[10px] leading-relaxed" style={{ color: textMuted }}>
-          Toca un día para ver detalle. Al reservar por el chat, verás aquí las fechas.
+        <p className="mt-2 text-center text-[10px] leading-relaxed" style={{ color: textMuted }}>
+          Toca un día para ver el detalle. El titular del negocio consulta todas las reservas en su panel Calendario.
         </p>
       )}
     </div>

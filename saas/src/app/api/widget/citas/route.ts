@@ -4,6 +4,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+/** Lista citas del visitante para esta sesión de widget (mismo negocio + session_id). */
 export async function GET(req: Request) {
   let service;
   try {

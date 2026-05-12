@@ -33,7 +33,7 @@ export interface ChatWidgetProps {
   backgroundImageUrl?: string | null;
   /** Si true, el panel de chat inicia abierto (p. ej. embed en web del cliente). */
   defaultOpen?: boolean;
-  /** Pestaña «Agenda» (reservas por sesión) y API del widget. Por defecto true. */
+  /** Pestaña «Agenda» en el widget (muestra citas de la sesión; el dueño ve todas en el panel). */
   enableAgenda?: boolean;
   /** Posición del widget. `center` agrupa burbuja/panel al centro (p. ej. página demo). */
   position?: "bottom-right" | "bottom-left" | "center";
@@ -484,6 +484,7 @@ export default function ChatWidget({
   const widgetBody = (
     <>
       <style>{`
+        .vc-prose code{background:${tk.codeBg};padding:1px 6px;border-radius:6px;font-size:.85em;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         .vc-prose strong{color:${tk.strongFg};font-weight:600}
         .vc-prose em{color:${tk.emFg};font-style:italic}
         .vc-list{margin:6px 0 6px 18px;padding:0;list-style:disc}
@@ -569,10 +570,10 @@ export default function ChatWidget({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 24, scale: 0.96 }}
               transition={{ type: "spring", stiffness: 260, damping: 26 }}
-              className="relative z-10 flex max-w-[calc(100vw-1.5rem)] flex-col items-stretch gap-3 md:max-w-none md:flex-row md:items-stretch"
+              className="relative z-10 flex w-full max-w-[min(100vw-1rem,960px)] flex-col items-stretch justify-center gap-3 md:flex-row md:items-stretch"
             >
               <div
-                className="relative flex h-[min(78vh,640px)] w-full min-w-0 flex-col overflow-hidden rounded-3xl md:w-[min(92vw,400px)]"
+                className="relative flex h-[min(78vh,720px)] w-full min-w-0 flex-col overflow-hidden rounded-3xl md:w-[min(94vw,560px)]"
                 style={{
                   color: tk.textBase,
                   border: `1px solid ${tk.border}`,
@@ -854,7 +855,7 @@ export default function ChatWidget({
                     </div>
 
                     <div
-                      className="shrink-0 px-3 pb-3 pt-2.5"
+                      className="pointer-events-auto shrink-0 px-3 pb-3 pt-2.5"
                       style={{
                         borderTop: `1px solid ${tk.borderSoft}`,
                         background: tk.footerOverlay,
@@ -876,7 +877,8 @@ export default function ChatWidget({
                           onKeyDown={onKeyDown}
                           rows={1}
                           placeholder="Escribe un mensaje…"
-                          className="vc-textarea flex-1 resize-none bg-transparent px-2 py-2 text-[14px] leading-relaxed outline-none"
+                          autoComplete="off"
+                          className="vc-textarea pointer-events-auto flex-1 min-w-0 resize-none bg-transparent px-2 py-2 text-[14px] leading-relaxed outline-none touch-manipulation"
                           style={{
                             maxHeight: 140,
                             color: tk.textBase,
@@ -938,7 +940,7 @@ export default function ChatWidget({
                           accent={accent}
                           compact
                           title="Calendario"
-                          subtitle="Tus reservas en esta conversación"
+                          subtitle="Tus reservas en esta sesión de chat"
                           textMuted={tk.textMuted}
                           textSubtle={tk.textSubtle}
                           textBase={tk.textBase}
@@ -951,8 +953,11 @@ export default function ChatWidget({
                     ) : null}
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-[12px]" style={{ color: tk.textMuted }}>
-                        Reservas enlazadas a <strong style={{ color: tk.textBase }}>esta misma conversación</strong> en este
-                        dispositivo. Si tu automatización no guarda la sesión del chat al crear la cita, aquí no aparecerán.
+                        Aquí ves las citas ligadas a <strong style={{ color: tk.textBase }}>esta sesión</strong> en
+                        este dispositivo. En cuanto el agente las guarda en base de datos con el{" "}
+                        <strong style={{ color: tk.textBase }}>negocio correcto</strong>, el dueño puede verlas y
+                        gestionarlas en el panel <strong style={{ color: tk.textBase }}>Calendario</strong> del
+                        negocio (todas las reservas, no solo esta charla).
                       </p>
                       <button
                         type="button"
@@ -982,9 +987,10 @@ export default function ChatWidget({
                     ) : null}
                     {!agendaLoading && !agendaError && agenda.length === 0 ? (
                       <p className="text-[13px] leading-relaxed" style={{ color: tk.textSubtle }}>
-                        Todavía no hay citas con esta sesión de chat. Si acabas de reservar, pulsa
-                        «Actualizar». Si reservaste desde otro navegador o el sistema no guardó la
-                        sesión, la agenda del widget no las puede mostrar.
+                        Aún no hay citas para esta sesión. Tras reservar, pulsa «Actualizar». Si el dueño no ve la
+                        cita en su Calendario, revisa que n8n inserte en <code className="text-[12px]">citas</code> el{" "}
+                        <code className="text-[12px]">negocio_id</code> y, si quieres que aparezcan aquí, el{" "}
+                        <code className="text-[12px]">session_id</code> del chat.
                       </p>
                     ) : null}
                     <ul className="space-y-2">
@@ -1061,7 +1067,7 @@ export default function ChatWidget({
             </div>
             {showAgenda ? (
               <div
-                className="relative hidden h-[min(78vh,640px)] w-[272px] shrink-0 flex-col overflow-hidden rounded-3xl md:flex"
+                className="relative z-10 hidden h-[min(78vh,720px)] w-full min-w-0 shrink-0 flex-col overflow-hidden rounded-3xl md:flex md:w-[min(94vw,320px)]"
                 style={{
                   color: tk.textBase,
                   border: `1px solid ${tk.border}`,
@@ -1080,19 +1086,21 @@ export default function ChatWidget({
                     background: `linear-gradient(135deg, ${accent}12 0%, transparent 55%)`,
                   }}
                 />
-                <SessionAgendaCalendar
-                  citas={agenda}
-                  accent={accent}
-                  title="Tu calendario"
-                  subtitle="Reservas hechas desde este chat en este dispositivo."
-                  textMuted={tk.textMuted}
-                  textSubtle={tk.textSubtle}
-                  textBase={tk.textBase}
-                  border={tk.border}
-                  borderSoft={tk.borderSoft}
-                  bubbleAssistantBg={tk.bubbleAssistantBg}
-                  bubbleAssistantBorder={tk.bubbleAssistantBorder}
-                />
+                <div className="relative z-[1] flex min-h-0 flex-1 flex-col">
+                  <SessionAgendaCalendar
+                    citas={agenda}
+                    accent={accent}
+                    title="Tu calendario"
+                    subtitle="Mismas citas de tu sesión; el dueño ve todas en el panel Calendario del negocio."
+                    textMuted={tk.textMuted}
+                    textSubtle={tk.textSubtle}
+                    textBase={tk.textBase}
+                    border={tk.border}
+                    borderSoft={tk.borderSoft}
+                    bubbleAssistantBg={tk.bubbleAssistantBg}
+                    bubbleAssistantBorder={tk.bubbleAssistantBorder}
+                  />
+                </div>
               </div>
             ) : null}
             </motion.div>
@@ -1112,7 +1120,7 @@ export default function ChatWidget({
           className="fixed inset-0 z-[2147483000] flex items-center justify-center pointer-events-none p-5 sm:p-8"
           style={fontStack}
         >
-          <div className="pointer-events-auto flex w-full max-w-[min(100%,56rem)] flex-col items-center gap-8 sm:gap-10">
+          <div className="pointer-events-auto flex w-full max-w-[min(100%,72rem)] flex-col items-center gap-8 sm:gap-10">
             {floatingIntro ? (
               <motion.div
                 className="w-full"
@@ -1123,12 +1131,14 @@ export default function ChatWidget({
                 {floatingIntro}
               </motion.div>
             ) : null}
-            <div className="relative flex w-full flex-col items-center">{widgetBody}</div>
+            <div className="relative z-20 flex w-full flex-col items-center pointer-events-auto">
+              {widgetBody}
+            </div>
           </div>
         </div>
       ) : (
         <div
-          className={`fixed bottom-5 sm:bottom-7 ${positionClasses} z-[2147483000]`}
+          className={`fixed bottom-5 sm:bottom-7 ${positionClasses} z-[2147483000] pointer-events-auto`}
           style={fontStack}
         >
           {widgetBody}

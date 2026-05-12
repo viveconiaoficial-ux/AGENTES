@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import { createClient } from "@/lib/supabase/server";
+import { getPortalNegocioForUser, userOwnsAnyNegocio } from "@/lib/supabase/portal-negocio";
 import panelShell from "./panel-shell.module.css";
 
 export default async function PanelBody({
@@ -26,6 +27,14 @@ export default async function PanelBody({
   /* redirect() lanza; no debe ir dentro del try/catch anterior. */
   if (!sessionOk) {
     redirect("/login");
+  }
+
+  const [owns, portalAsignado] = await Promise.all([
+    userOwnsAnyNegocio(),
+    getPortalNegocioForUser(),
+  ]);
+  if (!owns && portalAsignado) {
+    redirect("/portal/calendario");
   }
 
   return (

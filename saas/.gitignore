@@ -14,6 +14,9 @@ dist/
 
 # IDE / OS
 .DS_Store
+
+# Supabase CLI cache
+supabase/.temp/
 .idea/
 .vscode/
 *.log

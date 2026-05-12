@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import PortalAccesoDueñoForm from "./PortalAccesoDueñoForm";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export default async function ClienteConfiguracionPage({
   const supabase = createClient();
   const { data: negocio } = await supabase
     .from("negocios")
-    .select("id, nombre")
+    .select("id, nombre, portal_user_id")
     .eq("id", params.clienteId)
     .maybeSingle();
 
@@ -47,9 +48,25 @@ export default async function ClienteConfiguracionPage({
           {negocio.nombre || "Sin nombre"}
         </h1>
         <p className="mt-2 text-sm text-white/55">
-          Identificadores, enlace demo para venta y snippet de incrustacion.
+          Identificadores, acceso del dueño del negocio, demo e incrustación (solo tú, como agencia).
         </p>
       </header>
+
+      <section className="glass rounded-2xl p-6">
+        <div className="text-[11px] uppercase tracking-wider text-white/40">
+          Acceso del dueño (sin diseño del widget)
+        </div>
+        <p className="mt-2 text-sm text-white/55">
+          El cliente ve su calendario y conversaciones en <code className="text-xs">/portal</code>. Tú sigues
+          controlando colores, demo y script del chat.
+        </p>
+        <div className="mt-4">
+          <PortalAccesoDueñoForm
+            negocioId={negocio.id}
+            portalUserIdActual={negocio.portal_user_id}
+          />
+        </div>
+      </section>
 
       <section className="glass rounded-2xl p-6 space-y-3">
         <div className="text-[11px] uppercase tracking-wider text-white/40">

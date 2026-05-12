@@ -46,6 +46,7 @@ export async function crearCitaCliente(negocioId: string, data: CitaFormInput) {
   });
   if (error) return { error: error.message };
   revalidatePath(`/clientes/${negocioId}/citas`);
+  revalidatePath("/portal/calendario");
   return { ok: true as const };
 }
 
@@ -81,6 +82,7 @@ export async function actualizarCitaCliente(
     .eq("negocio_id", negocioId);
   if (error) return { error: error.message };
   revalidatePath(`/clientes/${negocioId}/citas`);
+  revalidatePath("/portal/calendario");
   return { ok: true as const };
 }
 
@@ -96,5 +98,6 @@ export async function eliminarCitaCliente(citaId: string, negocioId: string) {
     .eq("negocio_id", negocioId);
   if (error) return { error: error.message };
   revalidatePath(`/clientes/${negocioId}/citas`);
+  revalidatePath("/portal/calendario");
   return { ok: true as const };
 }

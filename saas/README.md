@@ -122,6 +122,8 @@ Por defecto el widget llama a **`/api/chat`** (mismo dominio). Esa ruta reenvía
 
 Tu workflow de n8n debe usar el **service_role key** de Supabase (bypassa RLS) para escribir conversaciones y citas en nombre de un negocio sin sesión de usuario.
 
+**Portal del dueño:** aplica la migración `0009_portal_usuario_negocio.sql` en Supabase (SQL Editor o `supabase db execute`). En **Cliente → Configuración** pega el UUID del usuario del dueño: esa persona entrará en `/portal` (calendario y conversaciones) sin ver el diseño del widget ni códigos embed; el chat público sigue siendo solo para clientes finales.
+
 > Pon `SUPABASE_SERVICE_ROLE_KEY` solo en n8n. **Nunca** en el frontend.
 
 Cuerpo que llega a n8n (igual que antes):
@@ -135,6 +137,8 @@ Cuerpo que llega a n8n (igual que antes):
 ```
 
 n8n busca el negocio por `negocio_id`, llama al modelo, guarda mensaje + respuesta y devuelve el texto de respuesta.
+
+Al guardar citas en Supabase, incluye siempre el **`negocio_id`**: así el dueño las ve en el panel **Cliente → Calendario**. El widget del visitante solo lista citas de **su** `session_id`, pero la fila en `citas` es la misma.
 
 ## Despliegue en Vercel
 
@@ -150,7 +154,7 @@ n8n busca el negocio por `negocio_id`, llama al modelo, guarda mensaje + respues
 5. **Environment Variables** (Production):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY` (solo servidor, para `/api/widget/citas`)
+   - `SUPABASE_SERVICE_ROLE_KEY` (solo servidor, para `/api/widget/citas` GET)
    - **`N8N_CHAT_WEBHOOK_URL`** o **`NEXT_PUBLIC_CHAT_ENDPOINT`** — al menos una, con la URL del webhook **web** (`…/webhook/agente-web`)
    - Opcional: `NEXT_PUBLIC_APP_URL` con tu dominio o `*.vercel.app`
 6. **Deploy** (Redeploy tras cambiar Root Directory o `vercel.json`).
