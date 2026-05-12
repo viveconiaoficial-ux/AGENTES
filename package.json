@@ -1,7 +1,7 @@
 {
   "name": "vive-agentes",
   "private": true,
-  "description": "Monorepo: app Next.js en /saas. Desarrollo: npm install en la raíz y npm run dev. Antes solo en saas: cd saas && npm ci.",
+  "description": "Monorepo: app Next.js en /saas. En Vercel: Root Directory = saas (Settings → Build). Dev: npm install en raíz y npm run dev.",
   "workspaces": [
     "saas"
   ],
