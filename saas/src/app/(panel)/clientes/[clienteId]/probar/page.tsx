@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import ChatWidgetLazy from "@/components/ChatWidgetLazy";
+import { createClient } from "@/lib/supabase/server";
+import { getPublicChatEndpoint } from "@/lib/chat-endpoint";
 import styles from "./probar.module.css";
 
 export const dynamic = "force-dynamic";
@@ -25,9 +26,7 @@ export default async function ClienteProbarPage({
 
   if (!negocio) notFound();
 
-  const endpoint =
-    process.env.NEXT_PUBLIC_CHAT_ENDPOINT ||
-    "http://alfredito1981.duckdns.org/webhook/agente-web";
+  const endpoint = getPublicChatEndpoint();
 
   return (
     <div className={styles.page}>

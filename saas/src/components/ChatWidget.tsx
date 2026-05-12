@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { getPublicChatEndpoint } from "@/lib/chat-endpoint";
 
 // ────────────────────────────────────────────────────────────────────────────────
 //  ChatWidget
@@ -55,10 +56,8 @@ interface ChatMessage {
   ts: number;
 }
 
-const DEFAULT_ENDPOINT =
-  (typeof process !== "undefined" &&
-    process.env?.NEXT_PUBLIC_CHAT_ENDPOINT) ||
-  "https://alfredito1981.duckdns.org/webhook/agente-web";
+/** Same-origin /api/chat por defecto (evita CORS con n8n); override con NEXT_PUBLIC_CHAT_ENDPOINT. */
+const DEFAULT_ENDPOINT = getPublicChatEndpoint();
 
 const SESSION_KEY = (negocioId: string) => `vive.chat.session.${negocioId}`;
 const HISTORY_KEY = (negocioId: string) => `vive.chat.history.${negocioId}`;

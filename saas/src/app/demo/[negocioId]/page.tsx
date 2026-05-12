@@ -1,4 +1,5 @@
 import ChatWidget from "@/components/ChatWidget";
+import { getPublicChatEndpoint } from "@/lib/chat-endpoint";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 
@@ -25,8 +26,7 @@ export default async function DemoClientePage({
   const endpointParam = searchParams?.endpoint;
   const endpoint =
     (typeof endpointParam === "string" && endpointParam) ||
-    process.env.NEXT_PUBLIC_CHAT_ENDPOINT ||
-    "http://alfredito1981.duckdns.org/webhook/agente-web";
+    getPublicChatEndpoint();
 
   const embedMode = searchParams?.embed === "1";
 
