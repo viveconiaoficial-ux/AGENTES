@@ -11,6 +11,8 @@ function resolveUpstream(): string {
     process.env.N8N_CHAT_WEBHOOK_URL?.trim() ||
     process.env.CHAT_WEBHOOK_URL?.trim() ||
     process.env.NEXT_PUBLIC_CHAT_ENDPOINT?.trim() ||
+    /* Compat: error típico al crear la var en Vercel (falta la T final) */
+    process.env.NEXT_PUBLIC_CHAT_ENDPOIN?.trim() ||
     ""
   );
 }
@@ -24,7 +26,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         respuesta:
-          "Falta la URL del webhook de n8n en el servidor. En Vercel añade una de estas variables (Production): N8N_CHAT_WEBHOOK_URL o NEXT_PUBLIC_CHAT_ENDPOINT, con la URL completa del flujo web (…/webhook/agente-web). Luego Redeploy.",
+          "Falta la URL del webhook de n8n. En Vercel revisa el nombre: debe ser NEXT_PUBLIC_CHAT_ENDPOINT (con T al final: ENDPOINT, no ENDPOIN). También vale N8N_CHAT_WEBHOOK_URL. Redeploy tras corregir.",
         error: "missing_upstream",
       },
       { status: 503 }
