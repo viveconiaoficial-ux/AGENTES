@@ -31,7 +31,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
           },
           {
             href: `/clientes/${clienteId}/citas`,
-            label: "Citas",
+            label: "Calendario",
             icon: IconCal,
           },
           {

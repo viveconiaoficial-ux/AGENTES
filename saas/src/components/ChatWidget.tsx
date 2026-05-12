@@ -1,7 +1,9 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import SessionAgendaCalendar from "@/components/SessionAgendaCalendar";
 import { getPublicChatEndpoint } from "@/lib/chat-endpoint";
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -33,8 +35,10 @@ export interface ChatWidgetProps {
   defaultOpen?: boolean;
   /** Pestaña «Agenda» (reservas por sesión) y API del widget. Por defecto true. */
   enableAgenda?: boolean;
-  /** Posición del widget. */
-  position?: "bottom-right" | "bottom-left";
+  /** Posición del widget. `center` agrupa burbuja/panel al centro (p. ej. página demo). */
+  position?: "bottom-right" | "bottom-left" | "center";
+  /** Si `position` es `center`, contenido opcional encima de la burbuja (texto de la página demo). */
+  floatingIntro?: ReactNode;
 }
 
 type Role = "user" | "assistant";
@@ -173,6 +177,7 @@ export default function ChatWidget({
   defaultOpen = false,
   enableAgenda = true,
   position = "bottom-right",
+  floatingIntro = null,
 }: ChatWidgetProps) {
   const showAgenda = enableAgenda !== false;
   const [open, setOpen] = useState(defaultOpen);
@@ -271,11 +276,15 @@ export default function ChatWidget({
     ta.style.height = Math.min(ta.scrollHeight, 140) + "px";
   }, [input]);
 
+  const isCenter = position === "center";
+
   const positionClasses = useMemo(
     () =>
       position === "bottom-left"
         ? "left-5 sm:left-7"
-        : "right-5 sm:right-7",
+        : position === "bottom-right"
+          ? "right-5 sm:right-7"
+          : "",
     [position]
   );
 
@@ -371,8 +380,9 @@ export default function ChatWidget({
   }, [showAgenda, negocioId, sessionId]);
 
   useEffect(() => {
-    if (open && activeTab === "agenda") void refreshAgenda();
-  }, [open, activeTab, refreshAgenda]);
+    if (!open || !showAgenda) return;
+    void refreshAgenda();
+  }, [open, showAgenda, activeTab, refreshAgenda]);
 
   async function send() {
     const text = input.trim();
@@ -471,11 +481,9 @@ export default function ChatWidget({
     }
   }
 
-  return (
+  const widgetBody = (
     <>
-      {/* Estilos locales mínimos para markdown y scrollbar */}
       <style>{`
-        .vc-prose code{background:${tk.codeBg};padding:1px 6px;border-radius:6px;font-size:.85em;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
         .vc-prose strong{color:${tk.strongFg};font-weight:600}
         .vc-prose em{color:${tk.emFg};font-style:italic}
         .vc-list{margin:6px 0 6px 18px;padding:0;list-style:disc}
@@ -485,10 +493,6 @@ export default function ChatWidget({
         .vc-scroll::-webkit-scrollbar-thumb:hover{background:${tk.scrollThumbHover}}
       `}</style>
 
-      <div
-        className={`fixed bottom-5 sm:bottom-7 ${positionClasses} z-[2147483000]`}
-        style={{ fontFamily: 'Inter, "SF Pro Display", "Geist", system-ui, sans-serif' }}
-      >
         {backgroundImageUrl?.trim() && open ? (
           <div
             aria-hidden
@@ -515,7 +519,9 @@ export default function ChatWidget({
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
               aria-label="Abrir chat"
-              className="group relative z-10 h-14 w-14 rounded-full text-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.7)] outline-none ring-0"
+              className={`group relative z-10 rounded-full text-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.7)] outline-none ring-0 ${
+                isCenter ? "h-[4.25rem] w-[4.25rem]" : "h-14 w-14"
+              }`}
               style={{
                 background:
                   "radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 40%), #09090b",
@@ -533,7 +539,7 @@ export default function ChatWidget({
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
-                className="relative mx-auto h-6 w-6"
+                className={`relative mx-auto ${isCenter ? "h-7 w-7" : "h-6 w-6"}`}
                 aria-hidden
               >
                 <path
@@ -563,18 +569,21 @@ export default function ChatWidget({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 24, scale: 0.96 }}
               transition={{ type: "spring", stiffness: 260, damping: 26 }}
-              className="relative z-10 flex h-[min(78vh,640px)] w-[min(92vw,400px)] flex-col overflow-hidden rounded-3xl"
-              style={{
-                color: tk.textBase,
-                border: `1px solid ${tk.border}`,
-                boxShadow: isLight
-                  ? "0 30px 80px -20px rgba(15,23,42,0.18), 0 8px 24px -10px rgba(15,23,42,0.12)"
-                  : "0 30px 80px -20px rgba(0,0,0,0.7), 0 8px 24px -10px rgba(0,0,0,0.6)",
-                background: `linear-gradient(180deg, ${backgroundFrom}DE 0%, ${backgroundTo}E8 100%)`,
-                backdropFilter: "blur(28px) saturate(140%)",
-                WebkitBackdropFilter: "blur(28px) saturate(140%)",
-              }}
+              className="relative z-10 flex max-w-[calc(100vw-1.5rem)] flex-col items-stretch gap-3 md:max-w-none md:flex-row md:items-stretch"
             >
+              <div
+                className="relative flex h-[min(78vh,640px)] w-full min-w-0 flex-col overflow-hidden rounded-3xl md:w-[min(92vw,400px)]"
+                style={{
+                  color: tk.textBase,
+                  border: `1px solid ${tk.border}`,
+                  boxShadow: isLight
+                    ? "0 30px 80px -20px rgba(15,23,42,0.18), 0 8px 24px -10px rgba(15,23,42,0.12)"
+                    : "0 30px 80px -20px rgba(0,0,0,0.7), 0 8px 24px -10px rgba(0,0,0,0.6)",
+                  background: `linear-gradient(180deg, ${backgroundFrom}DE 0%, ${backgroundTo}E8 100%)`,
+                  backdropFilter: "blur(28px) saturate(140%)",
+                  WebkitBackdropFilter: "blur(28px) saturate(140%)",
+                }}
+              >
               <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0 z-[1]"
@@ -916,6 +925,30 @@ export default function ChatWidget({
                   </>
                 ) : (
                   <div className="vc-scroll flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-3">
+                    {showAgenda ? (
+                      <div
+                        className="-mx-1 shrink-0 overflow-hidden rounded-2xl md:hidden"
+                        style={{
+                          border: `1px solid ${tk.borderSoft}`,
+                          background: tk.bubbleAssistantBg,
+                        }}
+                      >
+                        <SessionAgendaCalendar
+                          citas={agenda}
+                          accent={accent}
+                          compact
+                          title="Calendario"
+                          subtitle="Tus reservas en esta conversación"
+                          textMuted={tk.textMuted}
+                          textSubtle={tk.textSubtle}
+                          textBase={tk.textBase}
+                          border={tk.border}
+                          borderSoft={tk.borderSoft}
+                          bubbleAssistantBg={tk.bubbleAssistantBg}
+                          bubbleAssistantBorder={tk.bubbleAssistantBorder}
+                        />
+                      </div>
+                    ) : null}
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-[12px]" style={{ color: tk.textMuted }}>
                         Reservas enlazadas a <strong style={{ color: tk.textBase }}>esta misma conversación</strong> en este
@@ -1025,10 +1058,82 @@ export default function ChatWidget({
                   </div>
                 )}
               </div>
+            </div>
+            {showAgenda ? (
+              <div
+                className="relative hidden h-[min(78vh,640px)] w-[272px] shrink-0 flex-col overflow-hidden rounded-3xl md:flex"
+                style={{
+                  color: tk.textBase,
+                  border: `1px solid ${tk.border}`,
+                  boxShadow: isLight
+                    ? "0 30px 80px -20px rgba(15,23,42,0.18), 0 8px 24px -10px rgba(15,23,42,0.12)"
+                    : "0 30px 80px -20px rgba(0,0,0,0.7), 0 8px 24px -10px rgba(0,0,0,0.6)",
+                  background: `linear-gradient(180deg, ${backgroundFrom}DE 0%, ${backgroundTo}E8 100%)`,
+                  backdropFilter: "blur(28px) saturate(140%)",
+                  WebkitBackdropFilter: "blur(28px) saturate(140%)",
+                }}
+              >
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 z-0 rounded-3xl"
+                  style={{
+                    background: `linear-gradient(135deg, ${accent}12 0%, transparent 55%)`,
+                  }}
+                />
+                <SessionAgendaCalendar
+                  citas={agenda}
+                  accent={accent}
+                  title="Tu calendario"
+                  subtitle="Reservas hechas desde este chat en este dispositivo."
+                  textMuted={tk.textMuted}
+                  textSubtle={tk.textSubtle}
+                  textBase={tk.textBase}
+                  border={tk.border}
+                  borderSoft={tk.borderSoft}
+                  bubbleAssistantBg={tk.bubbleAssistantBg}
+                  bubbleAssistantBorder={tk.bubbleAssistantBorder}
+                />
+              </div>
+            ) : null}
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+    </>
+  );
+
+  const fontStack = {
+    fontFamily: 'Inter, "SF Pro Display", "Geist", system-ui, sans-serif',
+  } as const;
+
+  return (
+    <>
+      {isCenter ? (
+        <div
+          className="fixed inset-0 z-[2147483000] flex items-center justify-center pointer-events-none p-5 sm:p-8"
+          style={fontStack}
+        >
+          <div className="pointer-events-auto flex w-full max-w-[min(100%,56rem)] flex-col items-center gap-8 sm:gap-10">
+            {floatingIntro ? (
+              <motion.div
+                className="w-full"
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
+              >
+                {floatingIntro}
+              </motion.div>
+            ) : null}
+            <div className="relative flex w-full flex-col items-center">{widgetBody}</div>
+          </div>
+        </div>
+      ) : (
+        <div
+          className={`fixed bottom-5 sm:bottom-7 ${positionClasses} z-[2147483000]`}
+          style={fontStack}
+        >
+          {widgetBody}
+        </div>
+      )}
     </>
   );
 }
