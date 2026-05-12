@@ -1,6 +1,7 @@
 /* Carga antes que Tailwind: fondo y texto nunca blancos por fallo de bundles */
 html {
   min-height: 100%;
+  background-color: #050507 !important;
 }
 
 body {

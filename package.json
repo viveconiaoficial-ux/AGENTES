@@ -1,16 +1,14 @@
 {
   "name": "vive-agentes",
   "private": true,
-  "description": "Raíz del repo: la app Next.js vive en /saas. Usa npm run dev aquí o cd saas && npm run dev.",
-  "dependencies": {
-    "next": "^14.2.18",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
+  "description": "Monorepo: app Next.js en /saas. Desarrollo: npm install en la raíz y npm run dev. Antes solo en saas: cd saas && npm ci.",
+  "workspaces": [
+    "saas"
+  ],
   "scripts": {
-    "dev": "npm run dev --prefix saas",
-    "build": "npm run build --prefix saas",
-    "start": "npm run start --prefix saas",
-    "lint": "npm run lint --prefix saas"
+    "dev": "npm run dev -w vive-saas",
+    "build": "npm run build -w vive-saas",
+    "start": "npm run start -w vive-saas",
+    "lint": "npm run lint -w vive-saas"
   }
 }
