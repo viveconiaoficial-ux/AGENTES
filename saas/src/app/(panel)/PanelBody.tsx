@@ -9,18 +9,23 @@ export default async function PanelBody({
   children: React.ReactNode;
 }) {
   let emailDisplay: string | null = null;
+  let sessionOk = false;
 
   try {
     const supabase = createClient();
     const { data, error } = await supabase.auth.getUser();
 
-    if (error || !data?.user) {
-      redirect("/login");
+    if (!error && data?.user) {
+      sessionOk = true;
+      emailDisplay = data.user.email ?? null;
     }
-
-    emailDisplay = data.user.email ?? null;
   } catch {
     redirect("/login?error=panel");
+  }
+
+  /* redirect() lanza; no debe ir dentro del try/catch anterior. */
+  if (!sessionOk) {
+    redirect("/login");
   }
 
   return (
