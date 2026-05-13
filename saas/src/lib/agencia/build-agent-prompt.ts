@@ -86,7 +86,7 @@ ${summary}
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
         "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://localhost",
-        "X-Title": "Vive Agentes — brief desde URL",
+        "X-Title": "Vive Agentes - brief desde URL",
       },
       body: JSON.stringify({
         model,

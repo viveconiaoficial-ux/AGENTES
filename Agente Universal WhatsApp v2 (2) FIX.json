@@ -275,7 +275,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer {{TU_API_KEY_OPENROUTER}}"
+              "value": "=Bearer {{ $env.OPENROUTER_API_KEY || $env.OPENROUTER_KEY }}"
             },
             {
               "name": "Content-Type",
