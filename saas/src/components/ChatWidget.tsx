@@ -570,7 +570,11 @@ export default function ChatWidget({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 24, scale: 0.96 }}
               transition={{ type: "spring", stiffness: 260, damping: 26 }}
-              className="relative z-10 flex w-full max-w-[min(100vw-0.5rem,960px)] max-h-[calc(100dvh-1.25rem)] min-h-0 flex-col items-stretch gap-2 sm:flex-row sm:items-stretch sm:gap-3"
+              className="relative z-10 flex w-full max-w-[min(100vw-0.5rem,960px)] min-h-0 flex-col items-stretch gap-2 overflow-hidden sm:flex-row sm:items-stretch sm:gap-3"
+              style={{
+                height: "min(42rem, calc(100dvh - 1.25rem))",
+                maxHeight: "calc(100dvh - 1.25rem)",
+              }}
             >
               <div
                 className="relative flex min-h-0 w-full min-w-0 max-h-full flex-1 flex-col overflow-hidden rounded-3xl sm:h-full sm:max-h-full sm:w-[min(94vw,560px)] sm:flex-none"
@@ -607,7 +611,7 @@ export default function ChatWidget({
                 }}
               />
 
-              <div className="relative z-[10] flex min-h-0 flex-1 flex-col">
+              <div className="relative z-[10] flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
                 {/* HEADER */}
                 <div
                   className="flex shrink-0 items-center gap-3 px-5 pb-3 pt-4"
@@ -778,7 +782,7 @@ export default function ChatWidget({
                   <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
                     <div
                       ref={scrollRef}
-                      className="vc-scroll min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-4 py-4"
+                      className="vc-scroll min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto overflow-x-hidden overscroll-y-contain px-4 py-4"
                     >
                       <AnimatePresence initial={false}>
                         {messages.map((m) => (
@@ -855,12 +859,13 @@ export default function ChatWidget({
                     </div>
 
                     <div
-                      className="pointer-events-auto shrink-0 px-3 pb-3 pt-2.5"
+                      className="pointer-events-auto shrink-0 px-3 pt-2.5"
                       style={{
                         borderTop: `1px solid ${tk.borderSoft}`,
                         background: tk.footerOverlay,
                         backdropFilter: "blur(12px)",
                         WebkitBackdropFilter: "blur(12px)",
+                        paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
                       }}
                     >
                       <div
@@ -875,6 +880,16 @@ export default function ChatWidget({
                           value={input}
                           onChange={(e) => setInput(e.target.value)}
                           onKeyDown={onKeyDown}
+                          onFocus={(e) => {
+                            try {
+                              e.currentTarget.scrollIntoView({
+                                block: "nearest",
+                                behavior: "smooth",
+                              });
+                            } catch {
+                              /* ignore */
+                            }
+                          }}
                           rows={1}
                           placeholder="Escribe un mensaje…"
                           autoComplete="off"
