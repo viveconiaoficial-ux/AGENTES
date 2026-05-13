@@ -39,6 +39,11 @@ export interface ChatWidgetProps {
   position?: "bottom-right" | "bottom-left" | "center" | "inline";
   /** Si `position` es `center`, contenido opcional encima de la burbuja (texto de la página demo). */
   floatingIntro?: ReactNode;
+  /**
+   * Widget dentro del iframe de `embed.js` (demo?embed=1). Usa posicionamiento anclado al iframe
+   * en lugar de `fixed`+`100dvh`, que en muchos navegadores recorta el área de escritura.
+   */
+  embedHostFrame?: boolean;
 }
 
 type Role = "user" | "assistant";
@@ -178,6 +183,7 @@ export default function ChatWidget({
   enableAgenda = true,
   position = "bottom-right",
   floatingIntro = null,
+  embedHostFrame = false,
 }: ChatWidgetProps) {
   const showAgenda = enableAgenda !== false;
   const [open, setOpen] = useState(defaultOpen);
@@ -287,6 +293,9 @@ export default function ChatWidget({
           : "",
     [position]
   );
+
+  const cornerItemsClass =
+    position === "bottom-left" ? "items-start" : "items-end";
 
   const isLight = useMemo(
     () => isHexLight(backgroundFrom) && isHexLight(backgroundTo),
@@ -571,10 +580,17 @@ export default function ChatWidget({
               exit={{ opacity: 0, y: 24, scale: 0.96 }}
               transition={{ type: "spring", stiffness: 260, damping: 26 }}
               className="relative z-10 flex w-full max-w-[min(100vw-0.5rem,960px)] min-h-0 flex-col items-stretch gap-2 overflow-hidden sm:flex-row sm:items-stretch sm:gap-3"
-              style={{
-                height: "min(42rem, calc(100dvh - 1.25rem))",
-                maxHeight: "calc(100dvh - 1.25rem)",
-              }}
+              style={
+                embedHostFrame
+                  ? {
+                      height: "min(42rem, calc(100svh - 1.5rem))",
+                      maxHeight: "min(42rem, calc(100% - 0.25rem))",
+                    }
+                  : {
+                      height: "min(42rem, calc(100dvh - 1.25rem))",
+                      maxHeight: "calc(100dvh - 1.25rem)",
+                    }
+              }
             >
               <div
                 className="relative flex min-h-0 w-full min-w-0 max-h-full flex-1 flex-col overflow-hidden rounded-3xl sm:h-full sm:max-h-full sm:w-[min(94vw,560px)] sm:flex-none"
@@ -1156,6 +1172,18 @@ export default function ChatWidget({
       ) : position === "inline" ? (
         <div className="relative z-[1] w-full min-w-0" style={fontStack}>
           <div className="pointer-events-auto mx-auto flex w-full max-w-[min(100%,62rem)] min-w-0 flex-col items-center">
+            {widgetBody}
+          </div>
+        </div>
+      ) : embedHostFrame &&
+        (position === "bottom-right" || position === "bottom-left") ? (
+        <div
+          className={`absolute inset-0 z-[2147483000] flex min-h-0 flex-col justify-end pointer-events-none p-2 sm:p-3 ${cornerItemsClass}`}
+          style={fontStack}
+        >
+          <div
+            className={`pointer-events-auto flex h-full max-h-full w-full min-h-0 flex-col justify-end gap-2 ${cornerItemsClass}`}
+          >
             {widgetBody}
           </div>
         </div>

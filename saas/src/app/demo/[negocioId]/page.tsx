@@ -89,7 +89,7 @@ export default async function DemoClientePage({
     <main
       className={
         embedMode
-          ? "relative h-[100dvh] max-h-[100dvh] min-h-0 overflow-hidden text-white"
+          ? "relative h-svh max-h-svh min-h-0 w-full overflow-hidden overscroll-none text-white"
           : "relative min-h-screen overflow-x-hidden text-white"
       }
       style={{ background: embedMode ? "transparent" : undefined }}
@@ -121,6 +121,7 @@ export default async function DemoClientePage({
         defaultOpen={embedMode}
         position={embedMode ? "bottom-right" : "center"}
         floatingIntro={floatingIntro}
+        embedHostFrame={embedMode}
       />
     </main>
   );

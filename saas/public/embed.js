@@ -24,9 +24,10 @@
   iframe.style.right = "16px";
   iframe.style.bottom = "16px";
   if (startExpanded) {
-    /* Debe caber chat + calendario (fila en pantallas anchas) y el pie con el input en todas */
+    /* Debe caber chat + calendario; h-svh reduce cortes del teclado/barra en móvil dentro del iframe */
     iframe.style.width = "min(98vw, 940px)";
-    iframe.style.height = "min(92dvh, 780px)";
+    iframe.style.height = "min(90svh, 760px)";
+    iframe.style.maxHeight = "90svh";
   } else {
     iframe.style.width = "88px";
     iframe.style.height = "88px";
@@ -35,7 +36,7 @@
   iframe.style.zIndex = "2147483000";
   iframe.style.pointerEvents = "auto";
   iframe.style.background = "transparent";
-  iframe.style.overflow = "hidden";
+  iframe.style.overflow = "visible";
   iframe.allow = "clipboard-read; clipboard-write";
 
   window.addEventListener("message", function (event) {
@@ -44,10 +45,12 @@
     if (event.data.type !== "vive-widget-toggle") return;
     if (event.data.open) {
       iframe.style.width = "min(98vw, 940px)";
-      iframe.style.height = "min(92dvh, 780px)";
+      iframe.style.height = "min(90svh, 760px)";
+      iframe.style.maxHeight = "90svh";
     } else {
       iframe.style.width = "88px";
       iframe.style.height = "88px";
+      iframe.style.maxHeight = "";
     }
   });
 
