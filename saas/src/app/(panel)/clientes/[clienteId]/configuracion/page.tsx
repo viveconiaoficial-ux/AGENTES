@@ -165,7 +165,8 @@ export default async function ClienteConfiguracionPage({
           Demo para vender y dejar probar
         </div>
         <p className="mt-2 text-sm text-white/55">
-          Envia este enlace al posible cliente para que pruebe su widget:
+          Envia este enlace al posible cliente para que pruebe su widget (texto + chat; si la pantalla es baja,
+          puede hacer scroll hasta el cuadro de escritura):
         </p>
         <pre className="mt-3 overflow-x-auto rounded-lg bg-black/50 p-4 text-[12px] text-white/85 ring-1 ring-white/10">
 {demoUrl}

@@ -583,8 +583,8 @@ export default function ChatWidget({
               style={
                 embedHostFrame
                   ? {
-                      height: "min(42rem, calc(100svh - 1.5rem))",
-                      maxHeight: "min(42rem, calc(100% - 0.25rem))",
+                      height: "min(36rem, calc(100svh - 2rem))",
+                      maxHeight: "min(36rem, calc(100% - 1rem))",
                     }
                   : {
                       height: "min(42rem, calc(100dvh - 1.25rem))",
@@ -1150,13 +1150,13 @@ export default function ChatWidget({
     <>
       {isCenterOverlay ? (
         <div
-          className="fixed inset-0 z-[2147483000] flex items-center justify-center pointer-events-none p-5 sm:p-8"
-          style={fontStack}
+          className="fixed inset-0 z-[2147483000] overflow-y-auto overflow-x-hidden overscroll-y-contain pointer-events-auto"
+          style={{ ...fontStack, WebkitOverflowScrolling: "touch" }}
         >
-          <div className="pointer-events-auto flex w-full max-w-[min(100%,72rem)] flex-col items-center gap-8 sm:gap-10">
+          <div className="mx-auto flex min-h-full w-full max-w-[min(100%,72rem)] flex-col items-center gap-8 px-4 py-6 pb-[max(2.5rem,env(safe-area-inset-bottom))] sm:gap-10 sm:px-8 sm:py-10">
             {floatingIntro ? (
               <motion.div
-                className="w-full"
+                className="w-full shrink-0"
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
@@ -1164,7 +1164,7 @@ export default function ChatWidget({
                 {floatingIntro}
               </motion.div>
             ) : null}
-            <div className="relative z-20 flex w-full flex-col items-center pointer-events-auto">
+            <div className="relative z-20 flex w-full min-w-0 flex-col items-center">
               {widgetBody}
             </div>
           </div>
@@ -1178,11 +1178,11 @@ export default function ChatWidget({
       ) : embedHostFrame &&
         (position === "bottom-right" || position === "bottom-left") ? (
         <div
-          className={`absolute inset-0 z-[2147483000] flex min-h-0 flex-col justify-end pointer-events-none p-2 sm:p-3 ${cornerItemsClass}`}
-          style={fontStack}
+          className={`absolute inset-0 z-[2147483000] flex min-h-0 flex-col justify-end overflow-y-auto overflow-x-hidden overscroll-y-contain pointer-events-auto p-2 sm:p-3 ${cornerItemsClass}`}
+          style={{ ...fontStack, WebkitOverflowScrolling: "touch" }}
         >
           <div
-            className={`pointer-events-auto flex h-full max-h-full w-full min-h-0 flex-col justify-end gap-2 ${cornerItemsClass}`}
+            className={`pointer-events-auto flex min-h-0 w-full max-h-none flex-col justify-end gap-2 sm:max-h-full ${cornerItemsClass}`}
           >
             {widgetBody}
           </div>
