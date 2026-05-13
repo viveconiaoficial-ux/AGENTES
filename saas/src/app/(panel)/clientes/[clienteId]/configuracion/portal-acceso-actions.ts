@@ -91,7 +91,10 @@ export async function vincularPortalDueñoPorEmail(negocioId: string, emailRaw: 
 
   if (!targetId) {
     const origin = appOriginParaRedirect();
-    const redirectTo = origin ? `${origin}/portal` : undefined;
+    /** Debe coincidir con una URL permitida en Supabase Auth → Redirect URLs. PKCE exige /auth/callback antes de /portal. */
+    const redirectTo = origin
+      ? `${origin}/auth/callback?next=${encodeURIComponent("/portal")}`
+      : undefined;
     const { data: inv, error: invErr } = await admin.auth.admin.inviteUserByEmail(email, {
       redirectTo,
       data: { vive_invite: "portal" },
@@ -139,8 +142,8 @@ export async function vincularPortalDueñoPorEmail(negocioId: string, emailRaw: 
     ok: true as const,
     invitaciónEnviada,
     mensaje: invitaciónEnviada
-      ? "Listo: le hemos enviado un correo para activar la cuenta. Cuando termine, entrará en /portal con ese email."
-      : "Listo: ese email ya tenía cuenta. Puede entrar ya en /portal (misma contraseña que usa en tu app).",
+      ? "Listo: le llegará un correo con un enlace para activar la cuenta (debe pulsarlo: abre sesión y entra al portal). No lleva contraseña en el correo: después puede definir una desde Iniciar sesión → Recuperar contraseña o desde el enlace «Contraseña» del portal."
+      : "Listo: ese email ya tenía cuenta. Puede entrar ya en /portal (misma contraseña que use en esta app).",
   };
 }
 

@@ -107,7 +107,13 @@ export default function PortalAccesoDueñoForm({
             para activarla.
           </li>
           <li>
-            Dile que entre en la URL del portal (copia la de abajo), abra el correo si acaba de invitarle y ya.
+            Ese correo <strong>no incluye contraseña</strong> (es lo normal). El enlace activa la cuenta y entra al
+            portal. Para poder entrar luego con email y contraseña, use después{" "}
+            <strong>Iniciar sesión → Recuperar contraseña</strong> o el enlace «Contraseña» dentro del portal.
+          </li>
+          <li>
+            En Supabase → Authentication → URL configuration, debe estar permitida la URL{" "}
+            <code className="text-white/90">…/auth/callback</code> del sitio (además de la Site URL).
           </li>
         </ol>
       </div>

@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// Maneja la redirección tras confirmar email / OAuth.
+function safeInternalPath(candidate: string | null, fallback: string): string {
+  if (!candidate) return fallback;
+  const t = candidate.trim();
+  if (!t.startsWith("/") || t.startsWith("//") || t.includes("://")) return fallback;
+  return t;
+}
+
+// Maneja la redirección tras confirmar email / OAuth / invitación (PKCE).
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
+  const next = safeInternalPath(searchParams.get("next"), "/dashboard");
 
   if (code) {
     try {

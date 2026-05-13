@@ -26,6 +26,7 @@ export default function PortalSidebar({
     { href: asistenteHref, label: "Asistente", icon: IconAsistente },
     { href: calHref, label: "Calendario", icon: IconCal },
     { href: convHref, label: "Conversaciones", icon: IconChat },
+    { href: "/auth/contrasena", label: "Contraseña", icon: IconKey },
   ];
 
   return (
@@ -77,6 +78,20 @@ export default function PortalSidebar({
         </form>
       </div>
     </aside>
+  );
+}
+
+function IconKey({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden>
+      <path
+        d="M16 10V8.5a4 4 0 1 0-8 0V10M6 10h12v10H6V10Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="15" r="1.35" fill="currentColor" />
+    </svg>
   );
 }
 

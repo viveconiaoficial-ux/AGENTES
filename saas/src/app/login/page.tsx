@@ -5,6 +5,13 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import styles from "../auth-shell.module.css";
 
+function sanitizeNext(raw: string | null): string | null {
+  if (!raw) return null;
+  const t = raw.trim();
+  if (!t.startsWith("/") || t.startsWith("//") || t.includes("://")) return null;
+  return t;
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +53,9 @@ export default function LoginPage() {
       return;
     }
     /* Navegación completa: las cookies de sesión llegan al servidor en la 1.ª carga del panel. */
-    window.location.assign("/dashboard");
+    const q = new URLSearchParams(window.location.search);
+    const next = sanitizeNext(q.get("next"));
+    window.location.assign(next ?? "/dashboard");
   }
 
   return (
@@ -99,8 +108,23 @@ export default function LoginPage() {
           </button>
         </form>
 
+        <div className={`${styles.card} ${styles.cardStack}`} style={{ marginTop: "0.75rem" }}>
+          <p className={styles.bodyText} style={{ margin: 0 }}>
+            <strong>¿Le invitaron al portal y no tiene contraseña?</strong> Eso es normal: el correo solo trae un
+            enlace de activación (sin contraseña). Pulse ese enlace primero; luego puede definir una aquí:{" "}
+            <Link href="/auth/recuperar" style={{ color: "#93c5fd" }}>
+              Recuperar / definir contraseña
+            </Link>
+            .
+          </p>
+        </div>
+
         <p className={styles.footer}>
-          Acceso privado para administracion de clientes.
+          <Link href="/auth/recuperar" style={{ color: "rgba(255,255,255,0.55)" }}>
+            ¿Olvidó su contraseña?
+          </Link>
+          <span style={{ margin: "0 0.5rem", color: "rgba(255,255,255,0.25)" }}>·</span>
+          Acceso privado.
         </p>
       </div>
     </main>

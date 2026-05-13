@@ -2,14 +2,22 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { normalizeSupabaseProjectUrl } from "./normalize-url";
 
-const PUBLIC_PATHS = ["/", "/login", "/register", "/auth/callback", "/widget", "/demo"];
+const PUBLIC_PATHS = [
+  "/",
+  "/login",
+  "/register",
+  "/auth/callback",
+  "/auth/recuperar",
+  "/auth/signout",
+  "/widget",
+  "/demo",
+];
 
 function isPublic(pathname: string): boolean {
   if (PUBLIC_PATHS.includes(pathname)) return true;
   if (pathname.startsWith("/widget/")) return true;
   if (pathname.startsWith("/demo/")) return true;
   if (pathname.startsWith("/_next/")) return true;
-  if (pathname.startsWith("/auth/")) return true;
   return false;
 }
 
