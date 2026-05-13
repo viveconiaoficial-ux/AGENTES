@@ -12,6 +12,7 @@ interface Negocio {
   prompt_sistema?: string | null;
   horario: string | null;
   direccion: string | null;
+  telefono_contacto: string | null;
   evolution_host: string | null;
   evolution_apikey: string | null;
   evolution_instance: string | null;
@@ -98,6 +99,7 @@ export default function NegocioForm({ negocio }: { negocio: Negocio }) {
         prompt_sistema: form.prompt_personalizado,
         horario: form.horario,
         direccion: form.direccion,
+        telefono_contacto: form.telefono_contacto?.trim() || null,
         evolution_host: form.evolution_host,
         evolution_apikey: form.evolution_apikey,
         evolution_instance: form.evolution_instance,
@@ -141,6 +143,16 @@ export default function NegocioForm({ negocio }: { negocio: Negocio }) {
             value={form.direccion ?? ""}
             onChange={(v) => set("direccion", v)}
           />
+          <Field
+            label="Telefono de contacto (reserva si falla el chat web)"
+            value={form.telefono_contacto ?? ""}
+            onChange={(v) => set("telefono_contacto", v || null)}
+            placeholder="+34 600 000 000"
+          />
+          <p className="-mt-2 text-[11px] leading-relaxed text-white/40">
+            Si n8n no responde, el widget mostrara un mensaje de disculpas con este numero. No afecta a WhatsApp
+            (ese flujo va directo a n8n).
+          </p>
         </Group>
       </div>
 

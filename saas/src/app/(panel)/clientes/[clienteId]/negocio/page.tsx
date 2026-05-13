@@ -14,7 +14,7 @@ export default async function ClienteNegocioPage({
   const { data: negocio } = await supabase
     .from("negocios")
     .select(
-      "id, nombre, descripcion, prompt_personalizado, horario, direccion, evolution_host, evolution_apikey, evolution_instance, widget_accent, widget_bg_from, widget_bg_to, widget_background_image_url"
+      "id, nombre, descripcion, prompt_personalizado, horario, direccion, telefono_contacto, evolution_host, evolution_apikey, evolution_instance, widget_accent, widget_bg_from, widget_bg_to, widget_background_image_url"
     )
     .eq("id", params.clienteId)
     .maybeSingle();

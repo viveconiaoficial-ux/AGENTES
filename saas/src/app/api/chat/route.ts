@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createServiceClient } from "@/lib/supabase/service";
 
 /**
  * Destino n8n (webhook agente-web). Orden de preferencia:
@@ -15,6 +16,56 @@ function resolveUpstream(): string {
     process.env.NEXT_PUBLIC_CHAT_ENDPOIN?.trim() ||
     ""
   );
+}
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function extractNegocioId(body: unknown): string | null {
+  if (!body || typeof body !== "object") return null;
+  const id = (body as Record<string, unknown>).negocio_id;
+  if (typeof id !== "string" || !UUID_RE.test(id)) return null;
+  return id;
+}
+
+function pickRespuestaText(data: Record<string, unknown> | null): string {
+  if (!data) return "";
+  const v =
+    data.respuesta ?? data.message ?? data.text ?? data.reply ?? data.respuesta_texto;
+  if (typeof v === "string") return v.trim();
+  return "";
+}
+
+async function datosContactoNegocio(
+  negocioId: string
+): Promise<{ telefono: string | null; nombre: string | null }> {
+  try {
+    const admin = createServiceClient();
+    const { data } = await admin
+      .from("negocios")
+      .select("telefono_contacto, nombre")
+      .eq("id", negocioId)
+      .maybeSingle();
+    return {
+      telefono: data?.telefono_contacto?.trim() || null,
+      nombre: data?.nombre?.trim() || null,
+    };
+  } catch {
+    return { telefono: null, nombre: null };
+  }
+}
+
+function mensajeGuardarrailes(
+  telefono: string | null,
+  nombre: string | null
+): string {
+  const base =
+    "Disculpa, ahora mismo no puedo completar tu consulta con el asistente automático por un problema técnico.";
+  if (telefono) {
+    const quien = nombre ? ` (**${nombre}**)` : "";
+    return `${base} Para gestionar tu caso directamente con ellos${quien}, puedes llamar o escribir al **${telefono}**.`;
+  }
+  return `${base} Por favor, inténtalo de nuevo en unos minutos o contacta con el negocio por los canales habituales.`;
 }
 
 export const maxDuration = 60;
@@ -43,6 +94,20 @@ export async function POST(req: Request) {
     );
   }
 
+  const negocioId = extractNegocioId(body);
+
+  async function respuestaConGuardarrailes(): Promise<NextResponse> {
+    let tel: string | null = null;
+    let nombre: string | null = null;
+    if (negocioId) {
+      ({ telefono: tel, nombre } = await datosContactoNegocio(negocioId));
+    }
+    return NextResponse.json({
+      respuesta: mensajeGuardarrailes(tel, nombre),
+      error: "upstream_or_empty",
+    });
+  }
+
   try {
     const res = await fetch(UPSTREAM, {
       method: "POST",
@@ -53,30 +118,31 @@ export async function POST(req: Request) {
     const ct = res.headers.get("content-type") || "";
     const text = await res.text();
 
-    if (ct.includes("application/json")) {
+    let parsed: Record<string, unknown> | null = null;
+    if (ct.includes("application/json") && text.trim()) {
       try {
-        const data = JSON.parse(text) as Record<string, unknown>;
-        return NextResponse.json(data, { status: res.status });
+        parsed = JSON.parse(text) as Record<string, unknown>;
       } catch {
-        return new NextResponse(text, {
-          status: res.status,
-          headers: { "Content-Type": "text/plain; charset=utf-8" },
-        });
+        parsed = null;
       }
     }
 
-    return new NextResponse(text, {
-      status: res.status,
-      headers: { "Content-Type": ct || "text/plain; charset=utf-8" },
-    });
+    let replyText = pickRespuestaText(parsed);
+    if (!replyText && text.trim() && !parsed) {
+      replyText = text.trim();
+    }
+
+    const needFallback = !res.ok || !replyText;
+
+    if (needFallback) {
+      return respuestaConGuardarrailes();
+    }
+
+    if (parsed) {
+      return NextResponse.json(parsed, { status: 200 });
+    }
+    return NextResponse.json({ respuesta: replyText }, { status: 200 });
   } catch {
-    return NextResponse.json(
-      {
-        respuesta:
-          "No se pudo contactar con el automatizador (n8n). Revisa que la URL sea correcta y el flujo esté activo.",
-        error: "upstream_unreachable",
-      },
-      { status: 502 }
-    );
+    return respuestaConGuardarrailes();
   }
 }
