@@ -51,6 +51,20 @@ export default async function DashboardPage() {
         <Stat label="Citas" value={citasCount ?? 0} />
       </section>
 
+      <section className={styles.toolPromoCrm}>
+        <div>
+          <div className={styles.toolPromoCrmEyebrow}>CRM</div>
+          <h2 className={styles.toolPromoTitle}>Vive con IA CRM</h2>
+          <p className={styles.toolPromoLead}>
+            Accede al CRM embebido en el panel (requiere sesión en el propio CRM si aplica). Útil
+            para saltar de clientes agente a gestión comercial en un solo sitio.
+          </p>
+        </div>
+        <Link href="/crm" className={styles.toolPromoCrmBtn}>
+          Abrir CRM
+        </Link>
+      </section>
+
       <section className={styles.toolPromo}>
         <div>
           <div className={styles.toolPromoEyebrow}>Herramienta</div>

@@ -12,6 +12,7 @@ export default function Sidebar({ email }: { email?: string | null }) {
 
   const nav = [
     { href: "/dashboard", label: "Dashboard", icon: IconDash },
+    { href: "/crm", label: "CRM", icon: IconCrm },
     {
       href: "/herramientas/brief-agente",
       label: "Brief desde web",
@@ -91,6 +92,20 @@ export default function Sidebar({ email }: { email?: string | null }) {
         </form>
       </div>
     </aside>
+  );
+}
+
+function IconCrm({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden>
+      <path
+        d="M4 5.5h16v4H4v-4ZM4 14.5h7v5H4v-5ZM13 14.5h7v5h-7v-5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path d="M4 10.5h16" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
   );
 }
 

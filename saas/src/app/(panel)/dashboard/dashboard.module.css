@@ -102,6 +102,55 @@
   background: rgba(110, 231, 183, 1);
 }
 
+.toolPromoCrm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  border-radius: 1rem;
+  padding: 1.35rem 1.5rem;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  background: linear-gradient(
+    135deg,
+    rgba(14, 165, 233, 0.14) 0%,
+    rgba(9, 9, 11, 0.72) 55%
+  );
+}
+
+@media (min-width: 640px) {
+  .toolPromoCrm {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.toolPromoCrmEyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(125, 211, 252, 0.9);
+}
+
+.toolPromoCrmBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0c1422;
+  background: rgba(125, 211, 252, 0.95);
+  text-decoration: none;
+  border: 1px solid rgba(186, 230, 253, 0.55);
+  transition: background 0.15s ease;
+}
+
+.toolPromoCrmBtn:hover {
+  background: rgba(186, 230, 253, 1);
+}
+
 .statCard {
   border-radius: 1rem;
   padding: 1.25rem;
